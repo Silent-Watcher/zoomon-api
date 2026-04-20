@@ -1,28 +1,18 @@
 import { LOG_LEVELS } from '@nestjs/common';
 import { registerAs } from '@nestjs/config';
 import z from 'zod';
-import { fromError } from 'zod-validation-error';
+import { validateSchemaAndReturnData } from '../helpers/validation.helper';
 
-const loggerConfigSchema = z
-	.object({
-		levels: z.enum(LOG_LEVELS).default('log'),
-	})
-	.strict();
+const loggerConfigSchema = z.object({
+	levels: z.enum(LOG_LEVELS).default('log'),
+});
 
 export type LoggerConfigSchema = z.infer<typeof loggerConfigSchema>;
 
-export default registerAs('logger', () => {
+export default registerAs('logger', (): LoggerConfigSchema => {
 	const config = {
-		levels: process.env.LOG_LEVEL,
+		levels: process.env.LOG_LEVEL!,
 	};
 
-	const parseResult = loggerConfigSchema.safeParse(config);
-
-	if (!parseResult.success) {
-		throw new Error(
-			`Config validation error: ${fromError(parseResult.error).toString()}`,
-		);
-	}
-
-	return parseResult.data;
+	return validateSchemaAndReturnData(loggerConfigSchema, config);
 });
