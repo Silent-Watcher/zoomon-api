@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { AppLogger } from "./logger/logger.service";
+import { Injectable } from '@nestjs/common';
+import { AppLogger } from './logger/logger.service';
 
 @Injectable()
 export class AppService {
@@ -8,6 +8,6 @@ export class AppService {
 	}
 
 	getHello(): string {
-		return "Hello World!";
+		return 'Hello World!';
 	}
 }
