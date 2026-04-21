@@ -71,6 +71,8 @@ export class AuthService {
 
 		if (otp !== storedOtp) throw new BadRequestException('Invalid OTP');
 
+		await this.otpService.del(identifier);
+
 		let user = await this.userService.findOneByIdentifier(identifier, {
 			_id: 1,
 		});

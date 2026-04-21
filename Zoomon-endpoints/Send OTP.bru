@@ -1,0 +1,21 @@
+meta {
+  name: Send OTP
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/account/send-otp
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept: application/json;v=1
+}
+
+body:json {
+  {
+    "identifier": "ali@gmail.com"
+  }
+}

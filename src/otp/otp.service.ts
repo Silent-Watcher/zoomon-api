@@ -44,9 +44,18 @@ export class OtpService {
 		}
 	}
 
-	async fetch(identifier: string): Promise<string | null> {
+	fetch(identifier: string): Promise<string | null> {
 		const key = `${this.keyPrefix}:${identifier}`;
-		const storedOtp = await this.redis.getdel(key);
-		return storedOtp;
+		return this.redis.get(key);
+	}
+
+	getDel(identifier: string) {
+		const key = `${this.keyPrefix}:${identifier}`;
+		return this.redis.getdel(key);
+	}
+
+	del(identifier: string) {
+		const key = `${this.keyPrefix}:${identifier}`;
+		return this.redis.del(key);
 	}
 }

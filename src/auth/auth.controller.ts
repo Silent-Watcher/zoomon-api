@@ -41,7 +41,8 @@ export class AuthController {
 			password,
 		);
 
-		session.userId = userId;
+		session['userId'] = userId.toHexString();
+
 		return { verified };
 	}
 
@@ -57,7 +58,7 @@ export class AuthController {
 			otp,
 		);
 
-		session.userId = userId;
+		session['userId'] = userId.toHexString();
 		return { verified };
 	}
 

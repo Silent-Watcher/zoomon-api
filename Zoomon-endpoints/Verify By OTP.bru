@@ -1,0 +1,22 @@
+meta {
+  name: Verify By OTP
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/account/verify-otp
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept: application/json;v=1
+}
+
+body:json {
+  {
+    "identifier": "ali@gmail.com",
+    "otp": "124252"
+  }
+}

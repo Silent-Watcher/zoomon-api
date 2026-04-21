@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User, UserDocument } from './user.schema';
+import { User } from './user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import type {
 	ClientSession,
@@ -15,7 +15,7 @@ export class UserService {
 		@InjectModel(User.name) private readonly userModel: Model<User>,
 	) {}
 
-	async findOneByIdentifier(
+	findOneByIdentifier(
 		identifier: string,
 		projection?: ProjectionType<User>,
 		lean: boolean = true,
@@ -24,20 +24,28 @@ export class UserService {
 		const query: QueryFilter<User> = {
 			$or: [{ email: identifier }, { phone: identifier }],
 		};
-		return this.userModel.findOne(query, projection ?? { _id: 1 }, {
+		return this.userModel.findOne(query, projection, {
 			lean,
 			session,
 		});
 	}
 
-	async create(
-		identifier: string,
-		type: Identifier,
-		session?: ClientSession,
-	) {
+	create(identifier: string, type: Identifier, session?: ClientSession) {
 		const query: Partial<User> =
 			type === 'email' ? { email: identifier } : { phone: identifier };
 		const newUser = new this.userModel(query);
 		return newUser.save({ session });
+	}
+
+	findById(
+		id: string,
+		projection?: ProjectionType<User>,
+		lean: boolean = true,
+		session?: ClientSession,
+	) {
+		return this.userModel.findById(id, projection ?? { password: 0 }, {
+			lean,
+			session,
+		});
 	}
 }

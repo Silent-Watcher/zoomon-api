@@ -30,6 +30,7 @@ async function bootstrap() {
 	});
 
 	registerGlobalMiddlewares(app);
+
 	app.useGlobalPipes(new ValidationPipe());
 
 	await startHttpServer(app, { host, logger: systemLogger, port });

@@ -1,0 +1,15 @@
+meta {
+  name: Who am i ?
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/whoami
+  body: none
+  auth: inherit
+}
+
+headers {
+  Accept: application/json;v=1
+}
