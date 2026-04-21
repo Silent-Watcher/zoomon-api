@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	Inject,
 	Injectable,
 	InternalServerErrorException,
@@ -7,11 +8,12 @@ import Redis from 'ioredis';
 import { OTP_REDIS } from './redis-otp.module';
 import type { ConfigType } from '@nestjs/config';
 import apiConfig from '../common/configs/api.config';
+import { OTP_TTL_SEC } from './otp.constant';
 
 @Injectable()
 export class OtpService {
 	private readonly keyPrefix: string;
-	private readonly ttlSec = 120; // 2 minutes
+	private readonly ttlSec = OTP_TTL_SEC; // 2 minutes
 
 	constructor(
 		@Inject(OTP_REDIS) private readonly redis: Redis,
@@ -21,7 +23,7 @@ export class OtpService {
 		this.keyPrefix = `${this.apiConf.appName}:account:otp`;
 	}
 
-	async issueOtp(identifier: string) {
+	async createFor(identifier: string) {
 		try {
 			const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -29,7 +31,9 @@ export class OtpService {
 			const keyExists = await this.redis.exists(key);
 
 			if (keyExists) {
-				return await this.redis.get(key);
+				throw new BadRequestException(
+					`OTP for identifier : ${identifier} not expired!`,
+				);
 			}
 
 			await this.redis.setex(key, this.ttlSec, otp);
@@ -40,8 +44,9 @@ export class OtpService {
 		}
 	}
 
-	async verifyOtp(otp: string): Promise<string | null> {
-		const storedOtp = await this.redis.getdel(otp);
+	async fetch(identifier: string): Promise<string | null> {
+		const key = `${this.keyPrefix}:${identifier}`;
+		const storedOtp = await this.redis.getdel(key);
 		return storedOtp;
 	}
 }

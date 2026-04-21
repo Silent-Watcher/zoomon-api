@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ServerConfigSchema } from './common/configs/server.config';
 import { startHttpServer } from './common/helpers/server.helper';
 import { enableSystemLogger } from './common/helpers/logger.helper';
-import session from 'express-session';
 import { ApiConfig } from './common/configs/api.config';
+import { registerGlobalMiddlewares } from './common/helpers/app.helper';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule, {
@@ -29,9 +29,8 @@ async function bootstrap() {
 		infer: true,
 	});
 
-	const sessionOptions = config.get<session.SessionOptions>('session');
-
-	app.use(session(sessionOptions));
+	registerGlobalMiddlewares(app);
+	app.useGlobalPipes(new ValidationPipe());
 
 	await startHttpServer(app, { host, logger: systemLogger, port });
 }

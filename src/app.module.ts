@@ -10,7 +10,6 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { OtpRedisModule } from './otp/redis-otp.module';
 import { OtpModule } from './otp/otp.module';
-
 @Module({
 	imports: [
 		LoggerModule,
