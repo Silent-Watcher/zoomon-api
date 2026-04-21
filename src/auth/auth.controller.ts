@@ -10,6 +10,7 @@ import {
 	Req,
 	Res,
 	Session,
+	UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SigninDto } from './dtos/signin.dto';
@@ -17,11 +18,14 @@ import { VerifyPasswordDto } from './dtos/verify-password.dto';
 import { VerifyOtpDto } from './dtos/Verify-otp.dto';
 import { SendOtpDto } from './dtos/SendOtpDto';
 import type { Request, Response } from 'express';
+import { BlockIfAuthenticated } from './blockIfAuthenticated.guard';
+import { Secured } from './secured.guard';
 
 @Controller('account')
 export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 
+	@UseGuards(BlockIfAuthenticated)
 	@HttpCode(HttpStatus.ACCEPTED)
 	@Post('login')
 	signIn(@Body() signInDto: SigninDto) {
@@ -29,6 +33,7 @@ export class AuthController {
 		return this.authService.signIn(identifier);
 	}
 
+	@UseGuards(BlockIfAuthenticated)
 	@HttpCode(HttpStatus.OK)
 	@Post('verify-password')
 	async verifyPassword(
@@ -46,6 +51,7 @@ export class AuthController {
 		return { verified };
 	}
 
+	@UseGuards(BlockIfAuthenticated)
 	@HttpCode(HttpStatus.OK)
 	@Post('verify-otp')
 	async verifyOtp(
@@ -62,6 +68,7 @@ export class AuthController {
 		return { verified };
 	}
 
+	@UseGuards(BlockIfAuthenticated)
 	@HttpCode(HttpStatus.OK)
 	@Post('send-otp')
 	async sendOtp(@Body() sendOtpDto: SendOtpDto, @Res() res: Response) {
@@ -70,18 +77,15 @@ export class AuthController {
 		res.sendStatus(HttpStatus.OK);
 	}
 
+	@UseGuards(Secured)
 	@Get('logout')
 	async logout(@Req() req: Request, @Res() res: Response) {
-		if (!req.session['userId'])
-			throw new ForbiddenException('unsupported request');
-
 		req.session.destroy((err) => {
 			if (err)
 				throw new InternalServerErrorException(
 					'Failed to destroy session',
 				);
 		});
-
 		res.sendStatus(HttpStatus.OK);
 	}
 }
