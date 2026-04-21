@@ -1,17 +1,13 @@
 meta {
-  name: Login request
+  name: Auth: Login request
   type: http
-  seq: 3
+  seq: 1
 }
 
 post {
   url: {{baseUrl}}/account/login
   body: json
   auth: inherit
-}
-
-headers {
-  Accept: application/json;v=1
 }
 
 body:json {

@@ -6,8 +6,9 @@ import {
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { emailRegex, phoneRegex } from '../common/constants/regex';
-import { OtpService } from '../otp/otp.service';
+import { Otp, OtpService } from '../otp/otp.service';
 import { AppLogger } from '../logger/logger.service';
+import { comparePassword } from '../common/helpers/password.helper';
 
 export enum IDENTIFIERS {
 	EMAIL = 'email',
@@ -51,16 +52,21 @@ export class AuthService {
 	async issueOtp(identifier: string) {
 		let otp: string | null;
 
-		otp = await this.otpService.fetch(identifier);
+		const storedOtp = await this.otpService.fetch(identifier);
 
-		if (otp) throw new BadRequestException('already sent');
+		if (storedOtp) throw new BadRequestException('already sent');
 
 		otp = await this.otpService.createFor(identifier);
+		const rawOtp: Otp = JSON.parse(otp);
+
+		//---> if otp status is pending you can start send sms/email
 		// TODO: send email or sms the otp
-		this.logger.debug({ otp }, 'issued OTP');
+		//---> inside the worker after calling the sms/email service set status to sent
+		this.logger.debug({ otp: rawOtp }, 'issued OTP');
 
 		return {
 			msg: 'issued!',
+			otpId: rawOtp.id,
 		};
 	}
 
@@ -96,10 +102,23 @@ export class AuthService {
 		if (!user.password)
 			throw new BadRequestException('User has not set any password');
 
-		if (user.password !== password)
+		if (!comparePassword(password, user.password))
 			throw new NotAcceptableException('invalid password');
 
 		return { userId: user._id, verified: true };
+	}
+
+	async cancelOtp(identifier: string, otpId: string): Promise<void> {
+		const otp = await this.otpService.getDel(identifier);
+		if (otp) {
+			const rawOtp: Otp = JSON.parse(otp);
+			if (rawOtp.id !== otpId)
+				throw new BadRequestException(
+					'Invalid OTP id for this identifier',
+				);
+			//TODO: remove sending otp job from queue
+		}
+		return;
 	}
 
 	private getIdentifierType(identifier: string): Identifier {

@@ -1,11 +1,11 @@
 meta {
-  name: Verify By OTP
+  name: Auth: Send OTP
   type: http
-  seq: 4
+  seq: 3
 }
 
 post {
-  url: {{baseUrl}}/account/verify-otp
+  url: {{baseUrl}}/account/send-otp
   body: json
   auth: inherit
 }
@@ -16,7 +16,6 @@ headers {
 
 body:json {
   {
-    "identifier": "ali@gmail.com",
-    "otp": "124252"
+    "identifier": "ali@gmail.com"
   }
 }

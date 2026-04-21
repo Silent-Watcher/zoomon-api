@@ -1,7 +1,6 @@
 import {
 	Body,
 	Controller,
-	ForbiddenException,
 	Get,
 	HttpCode,
 	HttpStatus,
@@ -12,14 +11,15 @@ import {
 	Session,
 	UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { SigninDto } from './dtos/signin.dto';
-import { VerifyPasswordDto } from './dtos/verify-password.dto';
-import { VerifyOtpDto } from './dtos/Verify-otp.dto';
-import { SendOtpDto } from './dtos/SendOtpDto';
 import type { Request, Response } from 'express';
-import { BlockIfAuthenticated } from './blockIfAuthenticated.guard';
-import { Secured } from './secured.guard';
+import { AuthService } from './auth.service';
+import { SendOtpDto } from './dtos/SendOtpDto';
+import { SigninDto } from './dtos/signin.dto';
+import { VerifyOtpDto } from './dtos/verify-otp.dto';
+import { VerifyPasswordDto } from './dtos/verify-password.dto';
+import { BlockIfAuthenticated } from './guards/blockIfAuthenticated.guard';
+import { Secured } from './guards/secured.guard';
+import { CancelOtpDto } from './dtos/cancel-otp';
 
 @Controller('account')
 export class AuthController {
@@ -86,6 +86,15 @@ export class AuthController {
 					'Failed to destroy session',
 				);
 		});
+		res.sendStatus(HttpStatus.OK);
+	}
+
+	@Post('cancel-otp')
+	async cancelOtp(@Body() cancelOtpDto: CancelOtpDto, @Res() res: Response) {
+		const { identifier, otpId } = cancelOtpDto;
+
+		await this.authService.cancelOtp(identifier, otpId);
+
 		res.sendStatus(HttpStatus.OK);
 	}
 }

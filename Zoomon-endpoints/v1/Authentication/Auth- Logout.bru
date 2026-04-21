@@ -1,0 +1,11 @@
+meta {
+  name: Auth: Logout
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/account/logout
+  body: none
+  auth: inherit
+}

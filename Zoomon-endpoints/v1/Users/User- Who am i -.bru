@@ -1,0 +1,11 @@
+meta {
+  name: User: Who am i ?
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/users/whoami
+  body: none
+  auth: inherit
+}

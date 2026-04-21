@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import type {
@@ -8,6 +8,7 @@ import type {
 	QueryFilter,
 } from 'mongoose';
 import { Identifier } from '../auth/auth.service';
+import { hashPassword } from '../common/helpers/password.helper';
 
 @Injectable()
 export class UserService {
@@ -47,5 +48,23 @@ export class UserService {
 			lean,
 			session,
 		});
+	}
+
+	async setPassword(password: string, userId: string) {
+		let hashedPassword = hashPassword(password);
+
+		const result = await this.userModel.findByIdAndUpdate(
+			userId,
+			{
+				$set: { password: hashedPassword },
+			},
+			{ returnDocument: 'after', projection: { updatedAt: 1 } },
+		);
+
+		if (!result) {
+			throw new NotFoundException('User not found');
+		}
+
+		return result;
 	}
 }

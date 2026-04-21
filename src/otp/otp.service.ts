@@ -9,6 +9,18 @@ import { OTP_REDIS } from './redis-otp.module';
 import type { ConfigType } from '@nestjs/config';
 import apiConfig from '../common/configs/api.config';
 import { OTP_TTL_SEC } from './otp.constant';
+import { v4 as uuidv4 } from 'uuid';
+
+export enum OTP_STATUS {
+	PENDING = 'pending',
+	SENT = 'sent',
+}
+
+export interface Otp {
+	code: string;
+	id: string;
+	status: OTP_STATUS;
+}
 
 @Injectable()
 export class OtpService {
@@ -23,10 +35,8 @@ export class OtpService {
 		this.keyPrefix = `${this.apiConf.appName}:account:otp`;
 	}
 
-	async createFor(identifier: string) {
+	async createFor(identifier: string): Promise<string> {
 		try {
-			const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
 			const key = `${this.keyPrefix}:${identifier}`;
 			const keyExists = await this.redis.exists(key);
 
@@ -36,7 +46,16 @@ export class OtpService {
 				);
 			}
 
-			await this.redis.setex(key, this.ttlSec, otp);
+			const code = Math.floor(100000 + Math.random() * 900000).toString();
+			const rawOtp: Otp = {
+				code,
+				id: uuidv4(),
+				status: OTP_STATUS.PENDING,
+			};
+
+			const otp = JSON.stringify(rawOtp);
+
+			await this.redis.setex(key, this.ttlSec, JSON.stringify(otp));
 
 			return otp;
 		} catch (error) {
