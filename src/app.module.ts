@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { LoggerModule } from './logger/logger.module';
 import { ConfigModule } from '@nestjs/config';
 import { configModuleOptiosn } from './common/configs';
@@ -21,6 +20,6 @@ import { OtpModule } from './otp/otp.module';
 		OtpModule,
 	],
 	controllers: [AppController],
-	providers: [AppService],
+	providers: [],
 })
 export class AppModule {}

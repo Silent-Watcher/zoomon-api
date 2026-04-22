@@ -6,6 +6,7 @@ import mongoConfig from './mongo.config';
 import apiConfig from './api.config';
 import sessionConfig from './session.config';
 import redisConfig from './redis.config';
+import csrfConfig from './csrf.config';
 
 export const configModuleOptiosn: ConfigModuleOptions = {
 	ignoreEnvFile: true,
@@ -20,5 +21,6 @@ export const configModuleOptiosn: ConfigModuleOptions = {
 		apiConfig,
 		sessionConfig,
 		redisConfig,
+		csrfConfig,
 	],
 };
