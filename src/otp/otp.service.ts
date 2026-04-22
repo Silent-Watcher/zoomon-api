@@ -55,7 +55,7 @@ export class OtpService {
 
 			const otp = JSON.stringify(rawOtp);
 
-			await this.redis.setex(key, this.ttlSec, JSON.stringify(otp));
+			await this.redis.setex(key, this.ttlSec, otp);
 
 			return otp;
 		} catch (error) {

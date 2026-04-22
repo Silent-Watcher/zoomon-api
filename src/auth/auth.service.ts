@@ -77,8 +77,7 @@ export class AuthService {
 
 		const rawOtp: Otp = JSON.parse(storedOtp);
 
-		if (rawOtp.code !== storedOtp)
-			throw new BadRequestException('Invalid OTP');
+		if (rawOtp.code !== otp) throw new BadRequestException('Invalid OTP');
 
 		await this.otpService.del(identifier);
 
