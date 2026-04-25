@@ -1,14 +1,24 @@
 import { registerAs } from '@nestjs/config';
+import z from 'zod';
+import { validateSchemaAndReturnData } from '../helpers/validation.helper';
+
+const apiConfigSchema = z
+	.object({
+		requestTimeoutMs: z.coerce.number().nonnegative().gt(0),
+	})
+	.loose();
 
 export type ApiConfig = {
 	globalPrefix: string;
 	appName: string;
+	requestTimeoutMs: number;
 };
 
 export default registerAs('api', (): ApiConfig => {
-	const apiConfig = {
+	const config = {
 		globalPrefix: 'api',
 		appName: 'zoomon',
+		requestTimeoutMs: process.env.REQUEST_TIMEOUT_MS,
 	};
-	return apiConfig;
+	return validateSchemaAndReturnData(apiConfigSchema, config);
 });

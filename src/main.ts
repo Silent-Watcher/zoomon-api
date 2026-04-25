@@ -7,9 +7,10 @@ import { startHttpServer } from './common/helpers/server.helper';
 import { enableSystemLogger } from './common/helpers/logger.helper';
 import { ApiConfig } from './common/configs/api.config';
 import { registerGlobalMiddlewares } from './common/helpers/app.helper';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule, {
+	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
 		bufferLogs: true,
 	});
 
@@ -29,6 +30,7 @@ async function bootstrap() {
 		infer: true,
 	});
 
+	app.set('etag', false);
 	registerGlobalMiddlewares(app);
 
 	app.useGlobalPipes(new ValidationPipe());

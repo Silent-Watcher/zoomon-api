@@ -1,9 +1,20 @@
-import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Put,
+	Res,
+	UseGuards,
+	UseInterceptors,
+} from '@nestjs/common';
 import { Secured } from '../auth/guards/secured.guard';
 import { SetPasswordDto } from './dtos/set-password.dto';
 import { UserService } from './user.service';
 import { User } from './decorators/user.decorator';
-import { User as IUser } from './user.schema';
+import type { UserDocument } from './user.schema';
+import type { Response } from 'express';
+import { generateEntityEtag } from '../common/helpers/etag.helper';
+import { UserEtagInterceptor } from '../common/interceptors/etag.interceptor';
 
 @UseGuards(Secured)
 @Controller('users')
@@ -11,17 +22,12 @@ export class UserController {
 	constructor(private readonly userService: UserService) {}
 
 	@Get('whoami')
-	protected(@User() user: IUser) {
-		return user;
-	}
-
-	@Put('passwords')
-	async setPassword(
-		@Body() setPasswordDto: SetPasswordDto,
-		@User('_id') userId: string,
+	@UseInterceptors(UserEtagInterceptor)
+	protected(
+		@User() user: UserDocument,
+		@Res({ passthrough: true }) res: Response,
 	) {
-		const { password } = setPasswordDto;
-		const result = await this.userService.setPassword(password, userId);
-		return result;
+		res.set('etag', generateEntityEtag(user));
+		return { user };
 	}
 }

@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import helmet from 'helmet';
 import { doubleCsrf, DoubleCsrfConfigOptions } from 'csrf-csrf';
+import { etag } from '../middlewares/etag.middleware';
 
 export function registerGlobalMiddlewares(app: INestApplication): void {
 	const config = app.get(ConfigService);
@@ -14,6 +15,7 @@ export function registerGlobalMiddlewares(app: INestApplication): void {
 	const { doubleCsrfProtection } = doubleCsrf(csrfOptions);
 
 	//! DO NOT CHANGE THE ORDER OF THESE LINES!
+	app.use(etag);
 	app.use(helmet());
 	app.use(cookieParser());
 	app.use(session(sessionOptions));

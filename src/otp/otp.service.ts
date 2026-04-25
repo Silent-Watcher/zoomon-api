@@ -5,11 +5,11 @@ import {
 	InternalServerErrorException,
 } from '@nestjs/common';
 import Redis from 'ioredis';
-import { OTP_REDIS } from './redis-otp.module';
 import type { ConfigType } from '@nestjs/config';
 import apiConfig from '../common/configs/api.config';
 import { OTP_TTL_SEC } from './otp.constant';
 import { v4 as uuidv4 } from 'uuid';
+import { OTP_REDIS } from '../common/constants/otp.constant';
 
 export enum OTP_STATUS {
 	PENDING = 'pending',

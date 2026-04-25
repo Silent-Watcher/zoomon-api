@@ -7,8 +7,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { mongooseModuleAsyncOptions } from './common/configs/mongo.config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
-import { OtpRedisModule } from './otp/redis-otp.module';
 import { OtpModule } from './otp/otp.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 @Module({
 	imports: [
 		LoggerModule,
@@ -16,10 +17,14 @@ import { OtpModule } from './otp/otp.module';
 		MongooseModule.forRootAsync(mongooseModuleAsyncOptions),
 		AuthModule,
 		UserModule,
-		OtpRedisModule,
 		OtpModule,
 	],
 	controllers: [AppController],
-	providers: [],
+	providers: [
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: ResponseInterceptor,
+		},
+	],
 })
 export class AppModule {}

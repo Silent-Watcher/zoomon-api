@@ -39,6 +39,12 @@ export class User {
 		},
 	})
 	declare displayName?: string;
+
+	@Prop({
+		required: true,
+		default: 1,
+	})
+	declare version: number;
 }
 
 export type UserDocument = HydratedDocument<User>;
