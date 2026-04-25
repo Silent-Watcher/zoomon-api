@@ -10,6 +10,10 @@ import { UserModule } from './user/user.module';
 import { OtpModule } from './otp/otp.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { OptimisticLockInterceptor } from './common/interceptors/optimistic-lock.interceptor';
+import { EtagInterceptor } from './common/interceptors/etag.interceptor';
+import { CacheWithEtagInterceptor } from './common/interceptors/cache-with-etag.interceptor';
+
 @Module({
 	imports: [
 		LoggerModule,
@@ -24,6 +28,18 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 		{
 			provide: APP_INTERCEPTOR,
 			useClass: ResponseInterceptor,
+		},
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: EtagInterceptor,
+		},
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: OptimisticLockInterceptor,
+		},
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: CacheWithEtagInterceptor,
 		},
 	],
 })

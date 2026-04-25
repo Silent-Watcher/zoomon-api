@@ -9,9 +9,10 @@ import type {
 } from 'mongoose';
 import { Identifier } from '../auth/auth.service';
 import { hashPassword } from '../common/helpers/password.helper';
+import { OptimisticLockableService } from '../common/interfaces/optimistic-lockable.interface';
 
 @Injectable()
-export class UserService {
+export class UserService implements OptimisticLockableService {
 	constructor(
 		@InjectModel(User.name) private readonly userModel: Model<User>,
 	) {}

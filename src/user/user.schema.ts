@@ -38,13 +38,25 @@ export class User {
 			return `user-${this._id.toHexString().slice(-5)}`;
 		},
 	})
-	declare displayName?: string;
+	declare displayName: string;
+
+	@Prop({ required: false, default: undefined })
+	city?: string;
+
+	@Prop({ required: false, default: undefined })
+	birthdata?: Date;
+
+	@Prop({ required: false, default: undefined })
+	bio?: string;
 
 	@Prop({
 		required: true,
 		default: 1,
 	})
 	declare version: number;
+
+	declare updatedAt: Date;
+	declare createdAt: Date;
 }
 
 export type UserDocument = HydratedDocument<User>;

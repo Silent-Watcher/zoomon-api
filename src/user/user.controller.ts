@@ -2,32 +2,47 @@ import {
 	Body,
 	Controller,
 	Get,
-	Put,
+	Headers,
+	Patch,
 	Res,
 	UseGuards,
-	UseInterceptors,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { Secured } from '../auth/guards/secured.guard';
-import { SetPasswordDto } from './dtos/set-password.dto';
-import { UserService } from './user.service';
+import { USER_CONTEXT_KEY } from '../common/constants/server.constant';
+import { CacheWithEtag } from '../common/decorators/cache-with-etag.decorator';
+import { Etag } from '../common/decorators/etag.decorator';
+import { OptimisticLock } from '../common/decorators/optimistic-lock.decorator';
 import { User } from './decorators/user.decorator';
 import type { UserDocument } from './user.schema';
-import type { Response } from 'express';
-import { generateEntityEtag } from '../common/helpers/etag.helper';
-import { UserEtagInterceptor } from '../common/interceptors/etag.interceptor';
+import { UserService } from './user.service';
 
 @UseGuards(Secured)
 @Controller('users')
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
+	@Etag(USER_CONTEXT_KEY)
+	@CacheWithEtag()
 	@Get('whoami')
-	@UseInterceptors(UserEtagInterceptor)
-	protected(
+	getCurrentUser(
 		@User() user: UserDocument,
 		@Res({ passthrough: true }) res: Response,
 	) {
-		res.set('etag', generateEntityEtag(user));
 		return { user };
+	}
+
+	@Etag(USER_CONTEXT_KEY)
+	@OptimisticLock()
+	@Patch()
+	patchCurrentUser(
+		@User() user: UserDocument,
+		@Body() userPatchDto,
+		@Headers('If-Match') ifMatch: string,
+	) {
+		return {
+			user,
+			ifMatch,
+		};
 	}
 }

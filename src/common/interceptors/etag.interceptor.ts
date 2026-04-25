@@ -1,31 +1,57 @@
+import type { CallHandler, ExecutionContext } from '@nestjs/common';
+import { Injectable, NestInterceptor } from '@nestjs/common';
+import { ModuleRef, Reflector } from '@nestjs/core';
+import type { Request, Response } from 'express';
+import { Observable, tap } from 'rxjs';
 import {
-	CallHandler,
-	ExecutionContext,
-	HttpStatus,
-	NestInterceptor,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
-import { Observable } from 'rxjs';
+	DATA_CONTEXT_KEY,
+	ETAG_CONTEXT_KEY,
+} from '../constants/server.constant';
+import { ETAG_METADATA_KEY, EtagConfig } from '../decorators/etag.decorator';
 import { generateEntityEtag } from '../helpers/etag.helper';
 
-export class UserEtagInterceptor implements NestInterceptor {
-	intercept(
+@Injectable()
+export class EtagInterceptor implements NestInterceptor {
+	constructor(
+		private readonly reflector: Reflector,
+		private readonly moduleRef: ModuleRef,
+	) {}
+
+	async intercept(
 		context: ExecutionContext,
 		next: CallHandler<any>,
-	): Observable<any> {
-		const req = context.switchToHttp().getRequest<Request>();
-		const res = context.switchToHttp().getResponse<Response>();
+	): Promise<Observable<any>> {
+		const config = this.reflector.get<EtagConfig>(
+			ETAG_METADATA_KEY,
+			context.getHandler(),
+		);
 
-		const user = req['user'];
+		if (!config) {
+			return next.handle();
+		}
 
-		if (user) {
-			const inputEtag = req.headers['if-none-match'];
-			const currentUserEtag = generateEntityEtag(user);
+		const request = context.switchToHttp().getRequest<Request>();
+		const response = context.switchToHttp().getResponse<Response>();
+		const { dataKey, paramName, serviceToken } = config;
+		let resource: any;
 
-			if (inputEtag === currentUserEtag) {
-				res.sendStatus(HttpStatus.NOT_MODIFIED);
-				return new Observable((subscriber) => subscriber.complete());
-			}
+		if (dataKey) {
+			resource = request[DATA_CONTEXT_KEY][dataKey];
+		} else if (serviceToken && paramName) {
+			const id = request.params[paramName as string];
+			const service = this.moduleRef.get(serviceToken, { strict: false });
+			resource = await service.findById(id);
+		}
+
+		if (resource) {
+			const etag = generateEntityEtag(resource);
+			request[ETAG_CONTEXT_KEY] = etag;
+
+			return next.handle().pipe(
+				tap(() => {
+					response.set('etag', etag);
+				}),
+			);
 		}
 
 		return next.handle();
