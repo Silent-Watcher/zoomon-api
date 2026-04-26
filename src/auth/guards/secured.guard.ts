@@ -11,14 +11,26 @@ import {
 	DATA_CONTEXT_KEY,
 	USER_CONTEXT_KEY,
 } from '../../common/constants/server.constant';
+import { Reflector } from '@nestjs/core';
+import { PUBLIC_METADATA_KEY } from '../../common/decorators/public.decorator';
 
 @Injectable()
 export class Secured implements CanActivate {
-	constructor(private readonly userService: UserService) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly reflect: Reflector,
+	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest<Request>();
 		const userId = req.session['userId'];
+
+		const isPublic = this.reflect.getAllAndOverride<boolean>(
+			PUBLIC_METADATA_KEY,
+			[context.getHandler(), context.getClass()],
+		);
+
+		if (isPublic) return true;
 
 		if (userId) {
 			const user = await this.userService.findById(

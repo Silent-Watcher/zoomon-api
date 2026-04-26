@@ -1,5 +1,5 @@
 import type { CallHandler, ExecutionContext } from '@nestjs/common';
-import { Injectable, NestInterceptor } from '@nestjs/common';
+import { Injectable, NestInterceptor, RequestMethod } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
 import { Observable, tap } from 'rxjs';
@@ -21,13 +21,11 @@ export class EtagInterceptor implements NestInterceptor {
 		context: ExecutionContext,
 		next: CallHandler<any>,
 	): Promise<Observable<any>> {
-		const config = this.reflector.get<EtagConfig>(
+		const config = this.reflector.getAllAndOverride<EtagConfig>(
 			ETAG_METADATA_KEY,
-			context.getHandler(),
+			[context.getHandler(), context.getClass()],
 		);
 
-		console.log('config: ', config);
-		console.log('!config: ', !config);
 		if (!config) {
 			return next.handle();
 		}
@@ -36,6 +34,13 @@ export class EtagInterceptor implements NestInterceptor {
 		const response = context.switchToHttp().getResponse<Response>();
 		const { dataKey, paramName, serviceToken } = config;
 		let resource: any;
+
+		const requestMethod =
+			RequestMethod[request.method as keyof typeof RequestMethod];
+		const { GET, PUT, PATCH } = RequestMethod;
+		if (![GET, PUT, PATCH].includes(requestMethod)) {
+			return next.handle();
+		}
 
 		if (dataKey) {
 			resource = request[DATA_CONTEXT_KEY][dataKey];

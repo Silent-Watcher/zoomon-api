@@ -18,6 +18,5 @@ export function Etag(
 		typeof dataKeyOrService === 'string'
 			? { dataKey: dataKeyOrService }
 			: { paramName: dataKeyOrService, serviceToken };
-	console.log(config);
 	return SetMetadata(ETAG_METADATA_KEY, config);
 }

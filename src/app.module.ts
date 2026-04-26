@@ -8,11 +8,13 @@ import { mongooseModuleAsyncOptions } from './common/configs/mongo.config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { OtpModule } from './otp/otp.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { OptimisticLockInterceptor } from './common/interceptors/optimistic-lock.interceptor';
 import { EtagInterceptor } from './common/interceptors/etag.interceptor';
 import { CacheWithEtagInterceptor } from './common/interceptors/cache-with-etag.interceptor';
+import { Secured } from './auth/guards/secured.guard';
+import { BlockIfAuthenticatedGuard } from './auth/guards/blockIfAuthenticated.guard';
 
 @Module({
 	imports: [
@@ -25,6 +27,14 @@ import { CacheWithEtagInterceptor } from './common/interceptors/cache-with-etag.
 	],
 	controllers: [AppController],
 	providers: [
+		{
+			provide: APP_GUARD,
+			useClass: BlockIfAuthenticatedGuard,
+		},
+		{
+			provide: APP_GUARD,
+			useClass: Secured,
+		},
 		{
 			provide: APP_INTERCEPTOR,
 			useClass: ResponseInterceptor,

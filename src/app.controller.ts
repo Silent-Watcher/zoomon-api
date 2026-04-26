@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { AppLogger } from './logger/logger.service';
+import { Public } from './common/decorators/public.decorator';
 
 @Controller()
 export class AppController {
@@ -13,6 +14,7 @@ export class AppController {
 		this.logger.setContext(AppController.name);
 	}
 
+	@Public()
 	@Get('csrf-token')
 	getCsrfToken(@Req() req: Request) {
 		if (typeof req.csrfToken !== 'function') {

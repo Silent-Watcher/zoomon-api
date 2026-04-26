@@ -9,7 +9,6 @@ import {
 	Req,
 	Res,
 	Session,
-	UseGuards,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -17,15 +16,16 @@ import { SendOtpDto } from './dtos/SendOtpDto';
 import { SigninDto } from './dtos/signin.dto';
 import { VerifyOtpDto } from './dtos/verify-otp.dto';
 import { VerifyPasswordDto } from './dtos/verify-password.dto';
-import { BlockIfAuthenticated } from './guards/blockIfAuthenticated.guard';
-import { Secured } from './guards/secured.guard';
+import { BlockIfAuthenticated } from '../common/decorators/block-if-authenticated.decorator';
 import { CancelOtpDto } from './dtos/cancel-otp';
+import { Public } from '../common/decorators/public.decorator';
 
 @Controller('account')
 export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 
-	@UseGuards(BlockIfAuthenticated)
+	@Public()
+	@BlockIfAuthenticated()
 	@HttpCode(HttpStatus.ACCEPTED)
 	@Post('login')
 	signIn(@Body() signInDto: SigninDto) {
@@ -33,7 +33,8 @@ export class AuthController {
 		return this.authService.signIn(identifier);
 	}
 
-	@UseGuards(BlockIfAuthenticated)
+	@Public()
+	@BlockIfAuthenticated()
 	@HttpCode(HttpStatus.OK)
 	@Post('verify-password')
 	async verifyPassword(
@@ -51,7 +52,8 @@ export class AuthController {
 		return { verified };
 	}
 
-	@UseGuards(BlockIfAuthenticated)
+	@Public()
+	@BlockIfAuthenticated()
 	@HttpCode(HttpStatus.OK)
 	@Post('verify-otp')
 	async verifyOtp(
@@ -68,7 +70,8 @@ export class AuthController {
 		return { verified };
 	}
 
-	@UseGuards(BlockIfAuthenticated)
+	@Public()
+	@BlockIfAuthenticated()
 	@HttpCode(HttpStatus.OK)
 	@Post('send-otp')
 	async sendOtp(@Body() sendOtpDto: SendOtpDto, @Res() res: Response) {
@@ -77,7 +80,6 @@ export class AuthController {
 		res.sendStatus(HttpStatus.OK);
 	}
 
-	@UseGuards(Secured)
 	@Get('logout')
 	async logout(@Req() req: Request, @Res() res: Response) {
 		req.session.destroy((err) => {
@@ -89,6 +91,7 @@ export class AuthController {
 		res.sendStatus(HttpStatus.OK);
 	}
 
+	@Public()
 	@Post('cancel-otp')
 	async cancelOtp(@Body() cancelOtpDto: CancelOtpDto, @Res() res: Response) {
 		const { identifier, otpId } = cancelOtpDto;
