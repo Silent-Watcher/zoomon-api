@@ -21,7 +21,11 @@ export class Secured implements CanActivate {
 		const userId = req.session['userId'];
 
 		if (userId) {
-			const user = await this.userService.findById(userId);
+			const user = await this.userService.findById(
+				userId,
+				{ __v: 0 },
+				false,
+			);
 
 			if (!user) throw new NotFoundException('User not found');
 

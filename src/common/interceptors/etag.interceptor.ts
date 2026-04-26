@@ -26,6 +26,8 @@ export class EtagInterceptor implements NestInterceptor {
 			context.getHandler(),
 		);
 
+		console.log('config: ', config);
+		console.log('!config: ', !config);
 		if (!config) {
 			return next.handle();
 		}

@@ -6,10 +6,10 @@ import {
 	NestInterceptor,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { CACHE_WITH_ETAG_KEY } from '../constants/decorator.constant';
 import { ETAG_CONTEXT_KEY } from '../constants/server.constant';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 
 @Injectable()
 export class CacheWithEtagInterceptor implements NestInterceptor {
@@ -37,6 +37,10 @@ export class CacheWithEtagInterceptor implements NestInterceptor {
 			return new Observable((subscriber) => subscriber.complete());
 		}
 
-		return next.handle();
+		return next.handle().pipe(
+			tap(() => {
+				response.set('etag', etag);
+			}),
+		);
 	}
 }

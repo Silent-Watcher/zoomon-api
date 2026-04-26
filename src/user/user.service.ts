@@ -1,5 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { User } from './user.schema';
+import {
+	BadRequestException,
+	Injectable,
+	InternalServerErrorException,
+	NotAcceptableException,
+	NotFoundException,
+} from '@nestjs/common';
+import { User, UserDocument } from './user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import type {
 	ClientSession,
@@ -8,7 +14,10 @@ import type {
 	QueryFilter,
 } from 'mongoose';
 import { Identifier } from '../auth/auth.service';
-import { hashPassword } from '../common/helpers/password.helper';
+import {
+	comparePassword,
+	hashPassword,
+} from '../common/helpers/password.helper';
 import { OptimisticLockableService } from '../common/interfaces/optimistic-lockable.interface';
 import { Operation } from 'fast-json-patch';
 import jsonpatch from 'fast-json-patch';
@@ -50,58 +59,72 @@ export class UserService implements OptimisticLockableService {
 		lean: boolean = true,
 		session?: ClientSession,
 	) {
-		return this.userModel.findById(id, projection ?? { password: 0 }, {
+		return this.userModel.findById(id, projection, {
 			lean,
 			session,
 		});
 	}
 
-	async setPassword(password: string, userId: string) {
-		let hashedPassword = hashPassword(password);
+	// TODO: we can rate limit this path! with redis!
+	async setPassword(
+		newPassword: string,
+		user: UserDocument,
+		oldPassword?: string,
+	) {
+		const userOldPassword = user?.password;
 
-		const result = await this.userModel.findByIdAndUpdate(
-			userId,
+		if (!userOldPassword && oldPassword)
+			throw new BadRequestException(
+				'the User has not set a password yet',
+			);
+		if (userOldPassword && !oldPassword)
+			throw new BadRequestException(
+				"the User's current password is required",
+			);
+
+		if (userOldPassword && oldPassword) {
+			if (!comparePassword(oldPassword, userOldPassword))
+				throw new NotAcceptableException('invalid password');
+		}
+
+		let hashedPassword = hashPassword(newPassword);
+
+		const { modifiedCount, acknowledged } = await user.updateOne(
 			{
 				$set: { password: hashedPassword },
 			},
-			{ returnDocument: 'after', projection: { updatedAt: 1 } },
+			{ lean: true },
 		);
 
-		if (!result) throw new NotFoundException('User not found');
+		if (modifiedCount != 1 && !acknowledged) {
+			throw new InternalServerErrorException(
+				'operation failed try again',
+			);
+		}
 
-		return result;
+		return { acknowledged };
 	}
 
-	async patchCurrentUser(userId: string, jsonPatch: Operation[]) {
-		const userDoc = await this.findById(
-			userId,
-			{
-				bio: 1,
-				city: 1,
-				birthdata: 1,
-				displayName: 1,
-			},
-			false,
-		);
+	async patchCurrentUser(user: UserDocument, jsonPatch: Operation[]) {
+		const { bio, city, birthdate, displayName } = user;
+		const doc = { bio, city, birthdate, displayName };
 
-		if (!userDoc) throw new NotFoundException('User not found');
+		validateJsonPatch(jsonPatch, doc);
 
-		validateJsonPatch(jsonPatch, userDoc);
-
-		// ? you can use 'structuredClone' instead of 'JSON.parse(JSON.stringify(userDoc))'
-		const userDocClone = JSON.parse(JSON.stringify(userDoc));
+		// ? you can use 'structuredClone' instead of 'JSON.parse(JSON.stringify(doc))'
+		const docClone = JSON.parse(JSON.stringify(doc));
 		const patchResult = jsonpatch.applyPatch<User>(
-			userDocClone,
+			docClone,
 			jsonPatch,
 		).newDocument;
 
 		await validateInstanceWithDto(PatchUserDto, patchResult);
 
-		const { acknowledged, modifiedCount } = await userDoc.updateOne(
+		const { acknowledged, modifiedCount } = await user.updateOne(
 			{
 				$set: {
 					bio: patchResult.bio,
-					birthdata: patchResult,
+					birthdate: patchResult.birthdate,
 					city: patchResult.city,
 					displayName: patchResult.displayName,
 				},

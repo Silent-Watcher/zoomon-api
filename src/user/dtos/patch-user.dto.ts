@@ -24,7 +24,7 @@ export class PatchUserDto {
 		{},
 		{ message: 'Birthdate must be a avalid ISO 8601 date (YYYY-MM-DD)' },
 	)
-	birthdata?: string;
+	birthdate?: string;
 
 	@IsOptional()
 	@IsString()

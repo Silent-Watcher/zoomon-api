@@ -6,9 +6,9 @@ import {
 	PreconditionFailedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { OPTIMISTIC_LOCK_KEY } from '../constants/decorator.constant';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { ETAG_CONTEXT_KEY } from '../constants/server.constant';
 
 @Injectable()
@@ -26,6 +26,7 @@ export class OptimisticLockInterceptor implements NestInterceptor {
 		}
 
 		const request = context.switchToHttp().getRequest<Request>();
+		const response = context.switchToHttp().getResponse<Response>();
 		const etag = request[ETAG_CONTEXT_KEY];
 		const ifMatch = request.headers['if-match'];
 
@@ -41,6 +42,10 @@ export class OptimisticLockInterceptor implements NestInterceptor {
 			);
 		}
 
-		return next.handle();
+		return next.handle().pipe(
+			tap(() => {
+				response.set('etag', etag);
+			}),
+		);
 	}
 }

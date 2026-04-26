@@ -25,7 +25,7 @@ export class User {
 	})
 	phone?: string;
 
-	@Prop({ required: false, trim: true, index: true })
+	@Prop({ required: false, trim: true, index: true, default: undefined })
 	password?: string;
 
 	@Prop({
@@ -44,7 +44,7 @@ export class User {
 	city?: string;
 
 	@Prop({ required: false, default: undefined })
-	birthdata?: Date;
+	birthdate?: Date;
 
 	@Prop({ required: false, default: undefined })
 	bio?: string;
