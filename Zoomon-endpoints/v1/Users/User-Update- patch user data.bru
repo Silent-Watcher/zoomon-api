@@ -17,10 +17,16 @@ headers {
 }
 
 body:json {
-  {
-    "displayName": "John",
-    "city": "Tehran",
-    "bio": "this is my bio",
-    "birthdate": "8/8/1379"
-  }
+  [
+    {
+      "op": "add",
+      "path": "/displayName",
+      "value": "Jane"
+    },
+    {
+      "op": "add",
+      "path": "/bio",
+      "value": "this is my bio2"
+    }
+  ]
 }

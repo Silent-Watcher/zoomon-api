@@ -5,6 +5,7 @@ import session from 'express-session';
 import helmet from 'helmet';
 import { doubleCsrf, DoubleCsrfConfigOptions } from 'csrf-csrf';
 import { etag } from '../middlewares/etag.middleware';
+import * as bodyParser from 'body-parser';
 
 export function registerGlobalMiddlewares(app: INestApplication): void {
 	const config = app.get(ConfigService);
@@ -16,6 +17,11 @@ export function registerGlobalMiddlewares(app: INestApplication): void {
 
 	//! DO NOT CHANGE THE ORDER OF THESE LINES!
 	app.use(etag);
+	app.use(
+		bodyParser.json({
+			type: ['application/json', 'application/json-patch+json'],
+		}),
+	);
 	app.use(helmet());
 	app.use(cookieParser());
 	app.use(session(sessionOptions));

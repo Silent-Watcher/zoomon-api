@@ -2,10 +2,12 @@ import {
 	Body,
 	Controller,
 	Get,
+	Header,
 	Headers,
 	Patch,
 	Res,
 	UseGuards,
+	UsePipes,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { Secured } from '../auth/guards/secured.guard';
@@ -18,11 +20,11 @@ import type { UserDocument } from './user.schema';
 import { UserService } from './user.service';
 
 @UseGuards(Secured)
+@Etag(USER_CONTEXT_KEY)
 @Controller('users')
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
-	@Etag(USER_CONTEXT_KEY)
 	@CacheWithEtag()
 	@Get('whoami')
 	getCurrentUser(
@@ -32,17 +34,12 @@ export class UserController {
 		return { user };
 	}
 
-	@Etag(USER_CONTEXT_KEY)
 	@OptimisticLock()
 	@Patch()
-	patchCurrentUser(
-		@User() user: UserDocument,
-		@Body() userPatchDto,
-		@Headers('If-Match') ifMatch: string,
-	) {
-		return {
-			user,
-			ifMatch,
-		};
+	patchCurrentUser(@User('_id') userId: string, @Body() userPatchDto: any) {
+		return this.userService.patchCurrentUser(
+			userId.toString(),
+			userPatchDto,
+		);
 	}
 }
