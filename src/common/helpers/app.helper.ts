@@ -4,7 +4,6 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import helmet from 'helmet';
 import { doubleCsrf, DoubleCsrfConfigOptions } from 'csrf-csrf';
-import { etag } from '../middlewares/etag.middleware';
 import * as bodyParser from 'body-parser';
 
 export function registerGlobalMiddlewares(app: INestApplication): void {
@@ -16,7 +15,8 @@ export function registerGlobalMiddlewares(app: INestApplication): void {
 	const { doubleCsrfProtection } = doubleCsrf(csrfOptions);
 
 	//! DO NOT CHANGE THE ORDER OF THESE LINES!
-	app.use(etag);
+	// use this for adding etag value for all routes
+	// app.use(etag);
 	app.use(
 		bodyParser.json({
 			type: ['application/json', 'application/json-patch+json'],

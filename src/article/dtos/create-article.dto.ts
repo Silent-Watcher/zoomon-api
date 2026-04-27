@@ -1,5 +1,11 @@
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
+import {
+	IsMongoId,
+	IsNotEmpty,
+	IsOptional,
+	IsString,
+	Length,
+} from 'class-validator';
 import sanitizeHtml from 'sanitize-html';
 import slugify from 'slugify';
 
@@ -29,4 +35,9 @@ export class CreateArticleDto {
 		}),
 	)
 	declare content: string;
+
+	@IsString({ each: true })
+	@IsNotEmpty({ each: true })
+	// @IsMongoId({ each: true })
+	declare categories: string[];
 }

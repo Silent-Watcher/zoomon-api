@@ -4,6 +4,7 @@ import { ArticleController } from './article.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Article, ArticleSchema } from './article.schema';
 import { versionFieldMiddleware } from '../common/helpers/mongo.helper';
+import { Category, CategorySchema } from '../category/category.schema';
 
 @Module({
 	imports: [
@@ -15,6 +16,10 @@ import { versionFieldMiddleware } from '../common/helpers/mongo.helper';
 					versionFieldMiddleware(schema);
 					return schema;
 				},
+			},
+			{
+				name: Category.name,
+				useFactory: () => CategorySchema,
 			},
 		]),
 	],

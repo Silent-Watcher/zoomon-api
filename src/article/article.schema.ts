@@ -2,10 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from '../user/user.schema';
 import slugify from 'slugify';
+import { Category } from '../category/category.schema';
 
 @Schema({
 	id: true,
 	timestamps: true,
+	toJSON: { virtuals: true },
 })
 export class Article {
 	declare id: string;
@@ -56,6 +58,9 @@ export class Article {
 
 	@Prop({ required: false, default: 0, min: 0 })
 	declare version: number;
+
+	@Prop({ type: [Types.ObjectId], required: true, ref: Category.name })
+	declare categories: Types.ObjectId[];
 
 	declare createdAt: Date;
 	declare updatedAt: Date;

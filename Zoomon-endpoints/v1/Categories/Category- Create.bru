@@ -1,25 +1,21 @@
 meta {
-  name: User:Update: Set Password
+  name: Category: Create
   type: http
-  seq: 3
+  seq: 1
 }
 
-patch {
-  url: {{baseUrl}}/users/passwords
+post {
+  url: {{baseUrl}}/categories
   body: json
   auth: inherit
 }
 
 headers {
   x-csrf-token: 2a5e63302bc34b22ce5188f52891d12a8c8f191aa86c7c69a70137cafcfcbbfc.c7cae0598a8df58867f61e8002d49d517ed00e8416c7e6dc96c3541329827a0f6674d5c0705b3dc2046e11db91e4f781862798a8542b381c94f90fd75c03da85
-  Content-Type: application/json
-  If-Match: 787bf0e3c2ced4a8b83908f6c570e588
 }
 
 body:json {
   {
-    "oldPassword": "@Li44272815",
-    "password": "@Li44272815",
-    "confirmPassword": "@Li44272815"
+    "name": "infaltion"
   }
 }
