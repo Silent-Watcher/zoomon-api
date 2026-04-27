@@ -65,8 +65,9 @@ export class LikeService {
 			});
 
 			await newLike.save({ session });
+
 			await foundedArticle.updateOne(
-				{ $set: { likesCount: 1 } },
+				{ $inc: { likesCount: 1 } },
 				{ session },
 			);
 
@@ -75,6 +76,9 @@ export class LikeService {
 				Pick<LikeResult, 'liked' | 'likedBefore'>
 			>(result, { liked: true, likedBefore: false });
 		}
+
+		await session.commitTransaction();
+		await session.endSession();
 
 		return result;
 	}

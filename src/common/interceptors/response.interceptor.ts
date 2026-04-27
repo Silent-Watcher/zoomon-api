@@ -44,7 +44,7 @@ export class ResponseInterceptor implements NestInterceptor {
 			map((data) => {
 				const duration = Date.now() - startTime;
 
-				if (data.user.password) data.user.password = undefined;
+				if (data?.user?.password) data.user.password = undefined;
 
 				const transformedResponse: Partial<ApiResponse> = {
 					statusCode: response.statusCode,
