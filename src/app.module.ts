@@ -15,6 +15,8 @@ import { EtagInterceptor } from './common/interceptors/etag.interceptor';
 import { CacheWithEtagInterceptor } from './common/interceptors/cache-with-etag.interceptor';
 import { Secured } from './auth/guards/secured.guard';
 import { BlockIfAuthenticatedGuard } from './auth/guards/blockIfAuthenticated.guard';
+import { LikeModule } from './like/like.module';
+import { ArticleModule } from './article/article.module';
 
 @Module({
 	imports: [
@@ -24,6 +26,8 @@ import { BlockIfAuthenticatedGuard } from './auth/guards/blockIfAuthenticated.gu
 		AuthModule,
 		UserModule,
 		OtpModule,
+		LikeModule,
+		ArticleModule,
 	],
 	controllers: [AppController],
 	providers: [

@@ -2,8 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
 @Schema({
+	id: true,
 	timestamps: true,
-	versionKey: false,
 	toJSON: { virtuals: true },
 })
 export class User {
