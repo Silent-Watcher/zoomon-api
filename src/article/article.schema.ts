@@ -10,10 +10,17 @@ import slugify from 'slugify';
 export class Article {
 	declare id: string;
 
-	@Prop({ required: true, unique: true, index: true, trim: true })
+	@Prop({
+		required: true,
+		unique: true,
+		index: true,
+		trim: true,
+		minlength: 5,
+		maxLength: 50,
+	})
 	declare title: string;
 
-	@Prop({ required: false, trim: true })
+	@Prop({ required: false, trim: true, minlength: 5, maxLength: 50 })
 	subTitle?: string;
 
 	@Prop({
@@ -33,10 +40,10 @@ export class Article {
 		ref: User.name,
 		index: true,
 	})
-	declare authorId: User[];
+	declare authorId: Types.ObjectId;
 
 	@Prop({ required: true, default: 0, min: 0 })
-	declare timeToRead: number;
+	declare timeToRead: number; // in minute
 
 	@Prop({ required: true, minLength: 10, maxLength: 100_000 })
 	declare content: string;

@@ -14,12 +14,10 @@ export class BlockIfAuthenticatedGuard implements CanActivate {
 	canActivate(context: ExecutionContext): boolean {
 		const req = context.switchToHttp().getRequest<Express.Request>();
 
-		console.log('this.reflect: ', this.reflect);
 		const enabled = this.reflect.getAllAndOverride(
 			BLOCK_IF_AUTHENTICATED_KEY,
 			[context.getHandler(), context.getClass()],
 		);
-		console.log('enabled: ', enabled);
 
 		if (!enabled) return true;
 

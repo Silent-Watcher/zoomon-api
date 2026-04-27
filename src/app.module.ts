@@ -17,6 +17,7 @@ import { Secured } from './auth/guards/secured.guard';
 import { BlockIfAuthenticatedGuard } from './auth/guards/blockIfAuthenticated.guard';
 import { LikeModule } from './like/like.module';
 import { ArticleModule } from './article/article.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
 	imports: [
@@ -28,6 +29,7 @@ import { ArticleModule } from './article/article.module';
 		OtpModule,
 		LikeModule,
 		ArticleModule,
+		CategoryModule,
 	],
 	controllers: [AppController],
 	providers: [

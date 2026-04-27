@@ -33,7 +33,13 @@ async function bootstrap() {
 	app.set('etag', false);
 	registerGlobalMiddlewares(app);
 
-	app.useGlobalPipes(new ValidationPipe({}));
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true,
+			forbidNonWhitelisted: true,
+			transform: true,
+		}),
+	);
 
 	await startHttpServer(app, { host, logger: systemLogger, port });
 }
