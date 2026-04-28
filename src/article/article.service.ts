@@ -22,7 +22,7 @@ export class ArticleService {
 	) {
 		return this.articleModel.findById(id, projection, options);
 	}
-
+	//
 	async create(dto: CreateArticleDto, authorId: string) {
 		const { title, content, slug, subTitle, categories } = dto;
 
@@ -47,5 +47,19 @@ export class ArticleService {
 			categories,
 			timeToRead: Math.ceil(minutes),
 		});
+	}
+	//
+	async patchOneById(id: string) {
+		// check if the article exists!
+		// validate patch
+		// create a copy
+		// apply patch to copy
+		// validate copy with dto
+		// update the patch
+	}
+
+	async existsById(id: string): Promise<boolean> {
+		const result = await this.articleModel.exists({ _id: id });
+		return result ? true : false;
 	}
 }

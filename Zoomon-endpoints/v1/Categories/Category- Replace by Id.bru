@@ -1,21 +1,26 @@
 meta {
-  name: Category: Create
+  name: Category: Replace by Id
   type: http
-  seq: 1
+  seq: 2
 }
 
-post {
-  url: {{baseUrl}}/categories
+put {
+  url: {{baseUrl}}/categories/:id
   body: json
   auth: inherit
 }
 
+params:path {
+  id: 69f0ca0e2cb05b15a2a3bf76
+}
+
 headers {
   x-csrf-token: fc995267d4c6f8edc298ebeb52f60a707420cda6ba5dea47d71685e435761da9.c8498e8d227c964ab617eab27c6e6f3003cb74d736b3aad4946e34ffa52c02544d72920355fcb25c14df0230924ce0bd9a956861a3c2f955736f10059405c9ab
+  If-Match: 8d6f2fedae81a7bc7658ddd2173130d6
 }
 
 body:json {
   {
-    "name": "gold"
+    "name": "dummy"
   }
 }

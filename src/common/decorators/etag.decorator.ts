@@ -15,8 +15,11 @@ export function Etag(
 	serviceToken?: Type<any> | string,
 ) {
 	const config: EtagConfig =
-		typeof dataKeyOrService === 'string'
-			? { dataKey: dataKeyOrService }
-			: { paramName: dataKeyOrService, serviceToken };
+		// typeof dataKeyOrService === 'string'
+		// 	? { dataKey: dataKeyOrService }
+		// 	: { paramName: dataKeyOrService, serviceToken };
+		serviceToken
+			? { paramName: dataKeyOrService, serviceToken }
+			: { dataKey: dataKeyOrService };
 	return SetMetadata(ETAG_METADATA_KEY, config);
 }

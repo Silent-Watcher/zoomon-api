@@ -1,0 +1,19 @@
+meta {
+  name: Category: Get one by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/categories/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 69f0c15fd0a730a137151de9
+}
+
+headers {
+  If-None-Match: bab77a02fcb5fe29bf8831f1d62439d5
+}

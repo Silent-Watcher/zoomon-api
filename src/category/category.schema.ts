@@ -11,8 +11,17 @@ export class Category {
 	declare createdAt: Date;
 	declare updatedAt: Date;
 
-	@Prop({ required: true, unique: true, index: true, trim: true })
+	@Prop({
+		required: true,
+		unique: true,
+		index: true,
+		trim: true,
+		maxLength: 50,
+	})
 	declare name: string;
+
+	@Prop({ required: false, default: 0, min: 0 })
+	declare version: number;
 }
 
 export type CategoryDocument = HydratedDocument<Category>;

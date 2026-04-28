@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose';
+import { Query, Schema } from 'mongoose';
 
 interface WithVersion {
 	version: number;
@@ -7,7 +7,7 @@ interface WithVersion {
 export function versionFieldMiddleware<T extends WithVersion>(
 	schema: Schema<T>,
 ): void {
-	schema.pre(['updateOne', 'findOneAndUpdate'], function () {
+	const addVersionIncrement = function (this: Query<any, any>) {
 		const updateQuery = this.getUpdate();
 
 		if (!updateQuery) return;
@@ -16,7 +16,10 @@ export function versionFieldMiddleware<T extends WithVersion>(
 		}
 
 		updateQuery['$inc'].version = 1;
-	});
+	};
+
+	schema.pre(['updateOne', 'findOneAndUpdate'], addVersionIncrement);
+	schema.pre('updateMany', addVersionIncrement);
 
 	// ! this will not be an atomic operation use updateOne and findOneAndUpdate
 	schema.pre('save', function () {

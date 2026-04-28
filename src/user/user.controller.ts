@@ -7,6 +7,7 @@ import { User } from './decorators/user.decorator';
 import type { UserDocument } from './user.schema';
 import { UserService } from './user.service';
 import { SetPasswordDto } from './dtos/set-password.dto';
+import { Operation } from 'fast-json-patch';
 
 @Etag(USER_CONTEXT_KEY)
 @Controller('users')
@@ -21,7 +22,10 @@ export class UserController {
 
 	@OptimisticLock()
 	@Patch()
-	patchCurrentUser(@User() user: UserDocument, @Body() userPatchDto: any) {
+	patchCurrentUser(
+		@User() user: UserDocument,
+		@Body() userPatchDto: Operation[],
+	) {
 		return this.userService.patchCurrentUser(user, userPatchDto);
 	}
 
