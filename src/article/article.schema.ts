@@ -11,6 +11,7 @@ import { Category } from '../category/category.schema';
 })
 export class Article {
 	declare id: string;
+	declare _id: string;
 
 	@Prop({
 		required: true,
@@ -27,7 +28,7 @@ export class Article {
 
 	@Prop({
 		required: true,
-		default(this: ArticlaDocument) {
+		default(this: ArticleDocument) {
 			return this.title ? slugify(this.title) : slugify(this.id);
 		},
 		trim: true,
@@ -62,9 +63,18 @@ export class Article {
 	@Prop({ type: [Types.ObjectId], required: true, ref: Category.name })
 	declare categories: Types.ObjectId[];
 
+	@Prop({ required: true, default: false })
+	declare isPublished: boolean;
+
+	@Prop({ required: true, default: false })
+	declare isPremium: boolean;
+
+	@Prop({ required: false, default: undefined })
+	deletedAt?: Date;
+
 	declare createdAt: Date;
 	declare updatedAt: Date;
 }
 
-export type ArticlaDocument = HydratedDocument<Article>;
+export type ArticleDocument = HydratedDocument<Article>;
 export const ArticleSchema = SchemaFactory.createForClass(Article);

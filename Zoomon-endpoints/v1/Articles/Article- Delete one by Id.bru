@@ -1,0 +1,19 @@
+meta {
+  name: Article: Delete one by Id
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/articles/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 69f311408e6b5fc5dd705cee
+}
+
+headers {
+  x-csrf-token: b00723209372eca8bc4e96cadf20268fa35875d4e7d7fdddf60407d500a8dd0e.0960951f2273d24a1e89d137b2f5e00cbd527a844b89dee1060a10920dbf16dda08a112d02e5ce6e7475e290314c48606d90a6d73897db59389a092a4f94bd05
+}

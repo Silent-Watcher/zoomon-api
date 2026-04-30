@@ -47,7 +47,11 @@ export class EtagInterceptor implements NestInterceptor {
 		} else if (serviceToken && paramName) {
 			const id = request.params[paramName as string];
 			const service = this.moduleRef.get(serviceToken, { strict: false });
-			resource = await service.findById(id);
+			resource = await service.findById(
+				id,
+				{ updatedAt: 1, _id: 1, version: 1 },
+				{ lean: true },
+			);
 		}
 
 		if (resource) {

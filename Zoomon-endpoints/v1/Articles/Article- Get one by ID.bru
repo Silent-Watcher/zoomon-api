@@ -1,0 +1,19 @@
+meta {
+  name: Article: Get one by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/articles/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: cdf93e5eaef290402b88e2d01a39a3cc
+}
+
+headers {
+  If-None-Match: 7253998e4c4b150d78e0c372653f033d
+}

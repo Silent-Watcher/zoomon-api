@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+	IsBoolean,
 	IsMongoId,
 	IsNotEmpty,
 	IsOptional,
@@ -8,18 +9,31 @@ import {
 } from 'class-validator';
 import sanitizeHtml from 'sanitize-html';
 import slugify from 'slugify';
+import {
+	MAXIMUM_ARTICLE_SUB_TITLE_LENGTH,
+	MAXIMUM_ARTICLE_TITLE_LENGTH,
+	MINIMUM_ARTICLE_SUB_TITLE_LENGTH,
+	MINIMUM_ARTICLE_TITLE_LENGTH,
+} from '../article.constant';
 
 export class CreateArticleDto {
 	@IsString()
 	@IsNotEmpty()
-	@Length(5, 50)
-	@Transform(({ value }) => value.trim().replace(/<[^>]*>/g, ''))
+	@Length(MINIMUM_ARTICLE_TITLE_LENGTH, MAXIMUM_ARTICLE_TITLE_LENGTH)
+	@Transform(({ value }) =>
+		value.trim().replace(/[<>]/g, ' ').replace(/\s+/g, ' '),
+	)
 	declare title: string;
 
 	@IsOptional()
 	@IsString()
-	@Length(5, 50)
-	@Transform(({ value }) => value.trim().replace(/<[^>]*>/g, ''))
+	@Length(MINIMUM_ARTICLE_SUB_TITLE_LENGTH, MAXIMUM_ARTICLE_SUB_TITLE_LENGTH)
+	@Transform(({ value }) =>
+		value
+			.trim()
+			.replace(/[<>]/g, ' ') // replace < and > with space
+			.replace(/\s+/g, ' '),
+	)
 	subTitle?: string;
 
 	@IsOptional()
@@ -36,8 +50,17 @@ export class CreateArticleDto {
 	)
 	declare content: string;
 
-	@IsString({ each: true })
-	@IsNotEmpty({ each: true })
-	// @IsMongoId({ each: true })
-	declare categories: string[];
+	@IsOptional()
+	@IsMongoId({ each: true })
+	categories?: string[];
+
+	@IsOptional()
+	@IsBoolean()
+	@Transform(({ value }) => Boolean(value))
+	isPublished?: boolean;
+
+	@IsOptional()
+	@IsBoolean()
+	@Transform(({ value }) => Boolean(value))
+	isPremium?: boolean;
 }

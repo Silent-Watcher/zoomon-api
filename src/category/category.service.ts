@@ -90,7 +90,6 @@ export class CategoryService implements OptimisticLockableService {
 
 	async listAll(opts: ListAllOptions) {
 		let { sort, page, limit } = opts;
-		console.log('opts: ', opts);
 
 		let query: QueryFilter<Category> = {};
 
