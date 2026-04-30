@@ -1,4 +1,12 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	DefaultValuePipe,
+	Get,
+	Param,
+	Post,
+	Query,
+} from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { User } from '../user/decorators/user.decorator';
 import type { UserDocument } from '../user/user.schema';
@@ -7,6 +15,7 @@ import { articleByIdPipe } from '../article/pipes/article-by-id.pipe';
 import type { ArticleDocument } from '../article/article.schema';
 import type { CommentDocument } from './comment.schema';
 import { commentByIdPipe } from './pipes/commentById.pipe';
+import type { SortComment } from './comment.interface';
 
 @Controller('comments')
 export class CommentController {
@@ -38,5 +47,14 @@ export class CommentController {
 			parentComment,
 			createReplyDto,
 		);
+	}
+
+	@Get()
+	listCurrentUserComments(
+		@User('_id') userId: string,
+		@Query('sort', new DefaultValuePipe({ createdAt: 'desc' }))
+		sort: SortComment,
+	) {
+		return this.commentService.listCurrentUserComments(userId, { sort });
 	}
 }

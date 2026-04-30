@@ -1,13 +1,14 @@
 import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { Connection, Model } from 'mongoose';
+import { Connection, Model, QueryFilter, SortOrder } from 'mongoose';
 import { Comment, CommentDocument } from './comment.schema';
 import { UserDocument } from '../user/user.schema';
 import { CreateATopLevelCommentDto } from './dtos/create-a-top-level-comment.dto';
 import { Article, ArticleDocument } from '../article/article.schema';
 import { ArticleService } from '../article/article.service';
 import { CreateReplyCommentDto } from './dtos/create-reply-comment.dto';
-import { MAXIMUM_COMMENTS_DEPTH } from './comment.constant';
+import { COMMENT_STATUS, MAXIMUM_COMMENTS_DEPTH } from './comment.constant';
+import { ListCommentsOpts } from './comment.interface';
 
 @Injectable()
 export class CommentService {
@@ -52,7 +53,6 @@ export class CommentService {
 		createDto: CreateReplyCommentDto,
 	) {
 		const { content } = createDto;
-		console.log('content: ', content);
 
 		const session = await this.connection.startSession();
 		session.startTransaction();
@@ -84,5 +84,19 @@ export class CommentService {
 
 		await session.commitTransaction();
 		await session.endSession();
+	}
+
+	async listCurrentUserComments(userId: string, listOpts: ListCommentsOpts) {
+		const { sort } = listOpts;
+
+		let query: QueryFilter<Comment> = {
+			owner: userId,
+			status: COMMENT_STATUS.ACTIVE,
+			deletedAt: { $exists: false },
+		};
+
+		return this.commentsModel
+			.find(query)
+			.sort(sort as Record<string, SortOrder | { $meta: any }>);
 	}
 }
