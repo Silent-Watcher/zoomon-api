@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Article, ArticleDocument } from './article.schema';
-import { Model, ProjectionType, QueryOptions } from 'mongoose';
+import { ClientSession, Model, ProjectionType, QueryOptions } from 'mongoose';
 import { CreateArticleDto } from './dtos/create-article.dto';
 import readingTime from 'reading-time';
 import { Category } from '../category/category.schema';
@@ -126,5 +126,12 @@ export class ArticleService {
 		return article.updateOne({
 			$set: { deletedAt: new Date() },
 		});
+	}
+
+	async incrementCommentsCount(
+		article: ArticleDocument,
+		session?: ClientSession,
+	) {
+		return article.updateOne({ $inc: { commentsCount: 1 } }, { session });
 	}
 }

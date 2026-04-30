@@ -1,13 +1,17 @@
 meta {
-  name: Category: Create
+  name: Comment: Article Top level comment
   type: http
   seq: 1
 }
 
 post {
-  url: {{baseUrl}}/categories
+  url: {{baseUrl}}/comments/articles/:id
   body: json
   auth: inherit
+}
+
+params:path {
+  id: 69f311408e6b5fc5dd705cee
 }
 
 headers {
@@ -16,6 +20,6 @@ headers {
 
 body:json {
   {
-    "name": "hots"
+    "content": "this is a random comment 222"
   }
 }

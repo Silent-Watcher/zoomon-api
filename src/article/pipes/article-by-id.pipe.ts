@@ -35,7 +35,8 @@ export function articleByIdPipe(
 					},
 					options ?? { lean: true },
 				);
-				if (!foundedArticle) throw new NotFoundException('not found');
+				if (!foundedArticle)
+					throw new NotFoundException(`${Article.name} not found`);
 				return foundedArticle;
 			}
 			throw new InternalServerErrorException('something went wrong');

@@ -8,7 +8,7 @@ import { mongooseModuleAsyncOptions } from './common/configs/mongo.config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { OtpModule } from './otp/otp.module';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { OptimisticLockInterceptor } from './common/interceptors/optimistic-lock.interceptor';
 import { EtagInterceptor } from './common/interceptors/etag.interceptor';
@@ -18,6 +18,7 @@ import { BlockIfAuthenticatedGuard } from './auth/guards/blockIfAuthenticated.gu
 import { LikeModule } from './like/like.module';
 import { ArticleModule } from './article/article.module';
 import { CategoryModule } from './category/category.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
 	imports: [
@@ -30,6 +31,7 @@ import { CategoryModule } from './category/category.module';
 		LikeModule,
 		ArticleModule,
 		CategoryModule,
+		CommentModule,
 	],
 	controllers: [AppController],
 	providers: [
