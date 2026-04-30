@@ -5,6 +5,9 @@ import type { UserDocument } from '../user/user.schema';
 import { CreateATopLevelCommentDto } from './dtos/create-a-top-level-comment.dto';
 import { articleByIdPipe } from '../article/pipes/article-by-id.pipe';
 import type { ArticleDocument } from '../article/article.schema';
+import type { CommentDocument } from './comment.schema';
+import type { CreateReplyCommentDto } from './dtos/create-reply-comment.dto';
+import { commentByIdPipe } from './pipes/commentById.pipe';
 
 @Controller('comments')
 export class CommentController {
@@ -21,6 +24,19 @@ export class CommentController {
 			user,
 			article,
 			createATopLevelCommentDto,
+		);
+	}
+
+	@Post('replies/:parentId')
+	createReplyComment(
+		@User() user: UserDocument,
+		@Param('parentId', commentByIdPipe()) parentComment: CommentDocument,
+		@Body() createReplyDto: CreateReplyCommentDto,
+	) {
+		return this.commentService.createReplyComment(
+			user,
+			parentComment,
+			createReplyDto,
 		);
 	}
 }

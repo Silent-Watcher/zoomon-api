@@ -6,43 +6,43 @@ import {
 	Type,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Article } from '../article.schema';
 import { Model, ProjectionType, QueryOptions } from 'mongoose';
+import { Comment } from '../comment.schema';
+import { COMMENT_STATUS } from '../comment.constant';
 
-export function articleByIdPipe(
-	projection?: ProjectionType<Article>,
-	options?: QueryOptions<Article>,
+export function commentByIdPipe(
+	projection?: ProjectionType<Comment>,
+	options?: QueryOptions<Comment>,
 ): Type<PipeTransform> {
-	class ArticleByIdPipe implements PipeTransform {
+	class CommentByIdPipe implements PipeTransform {
 		constructor(
-			@InjectModel(Article.name)
-			private readonly articleModel: Model<Article>,
+			@InjectModel(Comment.name)
+			private readonly commentModel: Model<Comment>,
 		) {}
 
 		async transform(value: any, metadata: ArgumentMetadata) {
 			if (metadata.type === 'param' && metadata.data == 'id') {
-				const foundedArticle = await this.articleModel.findOne(
+				const foundedComment = await this.commentModel.findOne(
 					{
 						$and: [
 							{ _id: value },
 							{ deletedAt: { $exists: false } },
-							{ isPublished: true },
+							{ status: COMMENT_STATUS.ACTIVE },
 						],
 					},
 					projection ?? {
 						version: 0,
 						__v: 0,
-						updatedAt: 0,
 					},
 					options ?? { lean: true },
 				);
-				if (!foundedArticle)
-					throw new NotFoundException(`${Article.name} not found`);
-				return foundedArticle;
+				if (!foundedComment)
+					throw new NotFoundException(`${Comment.name} not found`);
+				return foundedComment;
 			}
 			throw new InternalServerErrorException('something went wrong');
 		}
 	}
 
-	return ArticleByIdPipe;
+	return CommentByIdPipe;
 }

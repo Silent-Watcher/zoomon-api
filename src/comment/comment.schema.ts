@@ -88,7 +88,9 @@ export class Comment {
 	})
 	declare status: string;
 
-	@Prop({ required: true, default: new Date() })
+	@Prop({ required: false, default: 0, min: 0 })
+	declare version: number;
+
 	declare updatedAt: Date;
 	declare createdAt: Date;
 }

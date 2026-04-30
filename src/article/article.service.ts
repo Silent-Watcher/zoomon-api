@@ -134,4 +134,15 @@ export class ArticleService {
 	) {
 		return article.updateOne({ $inc: { commentsCount: 1 } }, { session });
 	}
+
+	async incrementCommentsCountById(
+		articleId: string,
+		session?: ClientSession,
+	) {
+		return this.articleModel.findOneAndUpdate(
+			{ _id: articleId },
+			{ $inc: { commentsCount: 1 } },
+			{ session },
+		);
+	}
 }
