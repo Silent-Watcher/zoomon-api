@@ -60,10 +60,10 @@ export class Comment {
 	@Prop({ required: true, min: 0, max: MAXIMUM_COMMENTS_DEPTH, default: 0 })
 	declare depth: number;
 
-	@Prop({ required: false, default: new Date() })
+	@Prop({ required: false, default: undefined })
 	editedAt?: Date;
 
-	@Prop({ required: false, default: new Date(), index: true })
+	@Prop({ required: false, default: undefined, index: true })
 	deletedAt?: Date;
 
 	@Prop({ required: true, default: 0 })

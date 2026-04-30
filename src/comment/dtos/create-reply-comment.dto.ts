@@ -1,3 +1,9 @@
-import { CreateATopLevelCommentDto } from './create-a-top-level-comment.dto';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { MAXIMUM_COMMENT_CONTENT_LENGTH } from '../comment.constant';
 
-export class CreateReplyCommentDto extends CreateATopLevelCommentDto {}
+export class CreateReplyCommentDto {
+	@IsNotEmpty()
+	@IsString()
+	@MaxLength(MAXIMUM_COMMENT_CONTENT_LENGTH)
+	declare content: string;
+}

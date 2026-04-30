@@ -52,6 +52,7 @@ export class CommentService {
 		createDto: CreateReplyCommentDto,
 	) {
 		const { content } = createDto;
+		console.log('content: ', content);
 
 		const session = await this.connection.startSession();
 		session.startTransaction();

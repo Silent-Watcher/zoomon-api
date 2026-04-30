@@ -21,7 +21,8 @@ export function commentByIdPipe(
 		) {}
 
 		async transform(value: any, metadata: ArgumentMetadata) {
-			if (metadata.type === 'param' && metadata.data == 'id') {
+			console.log('metadata.data: ', metadata.data);
+			if (metadata.type === 'param' && metadata.data == 'parentId') {
 				const foundedComment = await this.commentModel.findOne(
 					{
 						$and: [
@@ -40,7 +41,7 @@ export function commentByIdPipe(
 					throw new NotFoundException(`${Comment.name} not found`);
 				return foundedComment;
 			}
-			throw new InternalServerErrorException('something went wrong');
+			return value;
 		}
 	}
 
