@@ -1,15 +1,24 @@
 import {
 	ConflictException,
 	Injectable,
+	NotAcceptableException,
 	NotFoundException,
 } from '@nestjs/common';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Category } from './category.schema';
-import { Connection, DeleteResult, Model, UpdateResult } from 'mongoose';
+import {
+	Connection,
+	DeleteResult,
+	Model,
+	QueryFilter,
+	UpdateResult,
+} from 'mongoose';
 import { ReplaceCategoryDto } from './dtos/update-category.dto';
 import { OptimisticLockableService } from '../common/interfaces/optimistic-lockable.interface';
 import { Article } from '../article/article.schema';
+import { ListAllOptions, SortCategory } from './category.interface';
+import { MAXIMUM_CATEGORY_PER_PAGE } from './category.constant';
 
 @Injectable()
 export class CategoryService implements OptimisticLockableService {
@@ -77,5 +86,37 @@ export class CategoryService implements OptimisticLockableService {
 		await session.commitTransaction();
 		await session.endSession();
 		return { acknowledged, deletedCount };
+	}
+
+	async listAll(opts: ListAllOptions) {
+		let { sort, page, limit } = opts;
+		console.log('opts: ', opts);
+
+		let query: QueryFilter<Category> = {};
+
+		let totalDocsQuery = this.categoryModel.countDocuments(query).lean();
+
+		const skip = limit * (page - 1);
+
+		let dataQuery = this.categoryModel
+			.find(query, { id: 1, name: 1 })
+			.sort(sort)
+			.skip(skip)
+			.limit(limit)
+			.lean();
+
+		const [totalDocs, data] = await Promise.all([
+			totalDocsQuery,
+			dataQuery,
+		]);
+
+		return {
+			data,
+			meta: {
+				total: totalDocs,
+				page,
+				pages: Math.ceil(totalDocs / limit),
+			},
+		};
 	}
 }

@@ -1,0 +1,1 @@
+export const MAXIMUM_CATEGORY_PER_PAGE = 10;

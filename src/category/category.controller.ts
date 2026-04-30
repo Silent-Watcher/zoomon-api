@@ -1,11 +1,15 @@
 import {
 	Body,
 	Controller,
+	DefaultValuePipe,
 	Delete,
 	Get,
 	Param,
+	ParseIntPipe,
 	Post,
 	Put,
+	Query,
+	UsePipes,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dtos/create-category.dto';
@@ -14,6 +18,9 @@ import { OptimisticLock } from '../common/decorators/optimistic-lock.decorator';
 import { ReplaceCategoryDto } from './dtos/update-category.dto';
 import { CacheWithEtag } from '../common/decorators/cache-with-etag.decorator';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
+import type { SortCategory } from './category.interface';
+import { SortCategoryPipe } from './pipes/sort-category.pipe';
+import { MAXIMUM_CATEGORY_PER_PAGE } from './category.constant';
 @Etag('id', CategoryService)
 @Controller('categories')
 export class CategoryController {
@@ -28,6 +35,26 @@ export class CategoryController {
 	@Get(':id')
 	getOne(@Param('id', ParseObjectIdPipe) id: string) {
 		return this.categoryService.getOne(id);
+	}
+
+	@UsePipes(SortCategoryPipe)
+	@Get()
+	listAll(
+		@Query('sort', new DefaultValuePipe({ name: 1 })) sort: SortCategory,
+		@Query(
+			'page',
+			new DefaultValuePipe(1),
+			new ParseIntPipe({ optional: true }),
+		)
+		page: number,
+		@Query(
+			'limit',
+			new DefaultValuePipe(MAXIMUM_CATEGORY_PER_PAGE),
+			new ParseIntPipe({ optional: true }),
+		)
+		limit: number,
+	) {
+		return this.categoryService.listAll({ page, limit, sort });
 	}
 
 	@OptimisticLock()

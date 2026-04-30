@@ -8,6 +8,7 @@ import { enableSystemLogger } from './common/helpers/logger.helper';
 import { ApiConfig } from './common/configs/api.config';
 import { registerGlobalMiddlewares } from './common/helpers/app.helper';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import qs from 'qs';
 
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -33,6 +34,7 @@ async function bootstrap() {
 	app.set('etag', false);
 	registerGlobalMiddlewares(app);
 
+	app.set('query parser', (str: string) => qs.parse(str));
 	app.useGlobalPipes(
 		new ValidationPipe({
 			whitelist: true,
