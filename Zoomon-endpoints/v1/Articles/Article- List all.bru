@@ -5,7 +5,12 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/articles
+  url: {{baseUrl}}/articles?limit=3
   body: none
   auth: inherit
+}
+
+params:query {
+  limit: 3
+  ~cursor: eyJwYXlsb2FkIjp7InByaW1hcnkiOiIyMDI2LTA1LTAxVDA3OjIxOjU3LjkzMloiLCJpZCI6IjY5ZjQ1NDk1NTI3MzNhY2FjMGYwYzYwNiJ9LCJzaWciOiI0MWMzYzIzNDVkZTE5NGIwN2FkNDE5YjM0YmQ0YWMwNTYwZTM3Mjg0ZjUwYmM5NDFmMjYzNDAzN2NlMGZjMjEyIn0=
 }

@@ -9,9 +9,12 @@ import { MongoServerError } from 'mongodb';
 import { MONGODB_ERROR_CODES } from '../constants/mongo.constant';
 import { extractMongoDuplicateKeyValueFromError } from '../helpers/mongo.helper';
 import { MongooseError } from 'mongoose';
+import { ApiUtil } from '../../util/api.util';
 
 @Catch(MongoServerError, MongooseError)
 export class MongoExceptionsFilter implements ExceptionFilter {
+	constructor(private readonly apiUtil: ApiUtil) {}
+
 	catch(exception: MongoServerError | MongooseError, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const request = ctx.getRequest<Request>();
@@ -31,7 +34,7 @@ export class MongoExceptionsFilter implements ExceptionFilter {
 			message = `Duplicate key error: ${duplicateKey}`;
 		}
 
-		const apiVersion = this.getApiVersion(request);
+		const apiVersion = this.apiUtil.getApiVersion(request);
 
 		response.status(status).json({
 			message,
@@ -40,14 +43,5 @@ export class MongoExceptionsFilter implements ExceptionFilter {
 			path: request.url,
 			apiVersion,
 		});
-	}
-
-	// todo: MOVE THIS into api util service!
-	private getApiVersion(req: Request): string {
-		const header = req.headers['accept'];
-		const versionExpression = header?.split(';')[1];
-		let version = versionExpression?.split('=')[1];
-		if (!version) version = '1';
-		return version;
 	}
 }

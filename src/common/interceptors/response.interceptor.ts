@@ -19,12 +19,14 @@ import apiConfig from '../configs/api.config';
 import { Request, Response } from 'express';
 import { v4 as uuidV4 } from 'uuid';
 import { ApiResponse } from '../interfaces/server.interface';
+import { ApiUtil } from '../../util/api.util';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
 	constructor(
 		@Inject(apiConfig.KEY)
 		private readonly apiConf: ConfigType<typeof apiConfig>,
+		private readonly apiUtil: ApiUtil,
 	) {}
 
 	intercept(
@@ -35,7 +37,7 @@ export class ResponseInterceptor implements NestInterceptor {
 		const response = context.switchToHttp().getResponse<Response>();
 
 		const reqId = uuidV4();
-		const apiVersion = this.getApiVersion(request);
+		const apiVersion = this.apiUtil.getApiVersion(request);
 
 		const startTime = Date.now();
 
@@ -82,14 +84,6 @@ export class ResponseInterceptor implements NestInterceptor {
 				return throwError(() => error);
 			}),
 		);
-	}
-
-	private getApiVersion(req: Request): string {
-		const header = req.headers['accept'];
-		const versionExpression = header?.split(';')[1];
-		let version = versionExpression?.split('=')[1];
-		if (!version) version = '1';
-		return version;
 	}
 
 	private extractDataFromResponse(
