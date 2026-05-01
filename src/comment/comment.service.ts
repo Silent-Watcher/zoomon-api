@@ -17,6 +17,7 @@ import { ArticleService } from '../article/article.service';
 import { CreateReplyCommentDto } from './dtos/create-reply-comment.dto';
 import { COMMENT_STATUS, MAXIMUM_COMMENTS_DEPTH } from './comment.constant';
 import { ListCommentsOpts } from './comment.interface';
+import { PatchCommentDto } from './dtos/patch-comment.dto';
 
 @Injectable()
 export class CommentService {
@@ -121,7 +122,19 @@ export class CommentService {
 	): Promise<Pick<UpdateResult, 'acknowledged' | 'modifiedCount'>> {
 		const { modifiedCount, acknowledged } = await comment.updateOne(
 			{ $set: { deletedAt: new Date() } },
-			{ session },
+			{ session, lean: true },
+		);
+		return { modifiedCount, acknowledged };
+	}
+
+	async patchOne(
+		comment: CommentDocument,
+		patchDto: PatchCommentDto,
+	): Promise<Pick<UpdateResult, 'acknowledged' | 'modifiedCount'>> {
+		const { content } = patchDto;
+		const { modifiedCount, acknowledged } = await comment.updateOne(
+			{ $set: { content, editedAt: new Date() } },
+			{ lean: true },
 		);
 		return { modifiedCount, acknowledged };
 	}

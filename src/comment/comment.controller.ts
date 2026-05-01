@@ -5,6 +5,7 @@ import {
 	Delete,
 	Get,
 	Param,
+	Patch,
 	Post,
 	Query,
 } from '@nestjs/common';
@@ -18,6 +19,7 @@ import type { CommentDocument } from './comment.schema';
 import { commentByIdPipe } from './pipes/commentById.pipe';
 import type { SortComment } from './comment.interface';
 import type { UpdateResult } from 'mongoose';
+import { PatchCommentDto } from './dtos/patch-comment.dto';
 
 @Controller('comments')
 export class CommentController {
@@ -65,6 +67,17 @@ export class CommentController {
 		@Param('id', commentByIdPipe({}, { lean: false }))
 		comment: CommentDocument,
 	): Promise<Pick<UpdateResult, 'acknowledged' | 'modifiedCount'>> {
+		// TODO: check if the current user is the comment owner or a moderator
 		return this.commentService.deleteOne(comment);
+	}
+
+	@Patch(':id')
+	patchOneById(
+		@Param('id', commentByIdPipe({}, { lean: false }))
+		comment: CommentDocument,
+		@Body() patchCommentDto: PatchCommentDto,
+	): Promise<Pick<UpdateResult, 'acknowledged' | 'modifiedCount'>> {
+		// TODO: check if the current user is the owner of the comment
+		return this.commentService.patchOne(comment, patchCommentDto);
 	}
 }

@@ -5,13 +5,21 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Comment, CommentSchema } from './comment.schema';
 import { ArticleModule } from '../article/article.module';
 import { Article, ArticleSchema } from '../article/article.schema';
+import { versionFieldMiddleware } from '../common/helpers/mongo.helper';
 
 @Module({
 	imports: [
 		ArticleModule,
-		MongooseModule.forFeature([
-			{ name: Comment.name, schema: CommentSchema },
-			{ name: Article.name, schema: ArticleSchema },
+		MongooseModule.forFeatureAsync([
+			{
+				name: Comment.name,
+				useFactory: () => {
+					const schema = CommentSchema;
+					versionFieldMiddleware(schema);
+					return schema;
+				},
+			},
+			{ name: Article.name, useFactory: () => ArticleSchema },
 		]),
 	],
 	controllers: [CommentController],
