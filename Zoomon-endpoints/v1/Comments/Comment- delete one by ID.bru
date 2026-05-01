@@ -1,0 +1,19 @@
+meta {
+  name: Comment: delete one by ID
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/comments/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 69f350f3652ec9c6d29b3fd9
+}
+
+headers {
+  x-csrf-token: 4cfcfb498bc3deb38c6915f5c1c7b27d48b20e2ec75275d36d6ae598fa63a0fb.f9bbe5291b4430ebd78946d1c3e7f266830803e90138a7ce3939226081d1fe5d2628c3552ebbda5f5b501fdc7cf34e631bce46071bcf31fca5b427bbfb0bfac2
+}

@@ -21,7 +21,10 @@ export function commentByIdPipe(
 		) {}
 
 		async transform(value: any, metadata: ArgumentMetadata) {
-			if (metadata.type === 'param' && metadata.data == 'parentId') {
+			if (
+				metadata.type === 'param' &&
+				['parentId', 'id'].includes(metadata?.data!)
+			) {
 				const foundedComment = await this.commentModel.findOne(
 					{
 						$and: [

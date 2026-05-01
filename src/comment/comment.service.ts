@@ -1,6 +1,14 @@
 import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { Connection, Model, QueryFilter, SortOrder } from 'mongoose';
+import {
+	ClientSession,
+	Connection,
+	DeleteResult,
+	Model,
+	QueryFilter,
+	SortOrder,
+	UpdateResult,
+} from 'mongoose';
 import { Comment, CommentDocument } from './comment.schema';
 import { UserDocument } from '../user/user.schema';
 import { CreateATopLevelCommentDto } from './dtos/create-a-top-level-comment.dto';
@@ -86,7 +94,10 @@ export class CommentService {
 		await session.endSession();
 	}
 
-	async listCurrentUserComments(userId: string, listOpts: ListCommentsOpts) {
+	async listCurrentUserComments(
+		userId: string,
+		listOpts: ListCommentsOpts,
+	): Promise<(Comment | null)[]> {
 		const { sort } = listOpts;
 
 		let query: QueryFilter<Comment> = {
@@ -99,5 +110,19 @@ export class CommentService {
 			.find(query, { version: 0, __v: 0, updatedAt: 0, path: 0 })
 			.sort(sort as Record<string, SortOrder | { $meta: any }>)
 			.lean();
+	}
+
+	async deleteOne(
+		comment: CommentDocument,
+	): Promise<Pick<UpdateResult, 'acknowledged' | 'modifiedCount'>>;
+	async deleteOne(
+		comment: CommentDocument,
+		session?: ClientSession,
+	): Promise<Pick<UpdateResult, 'acknowledged' | 'modifiedCount'>> {
+		const { modifiedCount, acknowledged } = await comment.updateOne(
+			{ $set: { deletedAt: new Date() } },
+			{ session },
+		);
+		return { modifiedCount, acknowledged };
 	}
 }

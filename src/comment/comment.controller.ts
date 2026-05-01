@@ -2,6 +2,7 @@ import {
 	Body,
 	Controller,
 	DefaultValuePipe,
+	Delete,
 	Get,
 	Param,
 	Post,
@@ -16,6 +17,7 @@ import type { ArticleDocument } from '../article/article.schema';
 import type { CommentDocument } from './comment.schema';
 import { commentByIdPipe } from './pipes/commentById.pipe';
 import type { SortComment } from './comment.interface';
+import type { UpdateResult } from 'mongoose';
 
 @Controller('comments')
 export class CommentController {
@@ -56,5 +58,13 @@ export class CommentController {
 		sort: SortComment,
 	) {
 		return this.commentService.listCurrentUserComments(userId, { sort });
+	}
+
+	@Delete(':id')
+	deleteOneById(
+		@Param('id', commentByIdPipe({}, { lean: false }))
+		comment: CommentDocument,
+	): Promise<Pick<UpdateResult, 'acknowledged' | 'modifiedCount'>> {
+		return this.commentService.deleteOne(comment);
 	}
 }
