@@ -7,3 +7,7 @@ export const MONGO_SORT_VALUES = [
 	'desc',
 	'descending',
 ] as const;
+
+export enum MONGODB_ERROR_CODES {
+	DUPLICATE_KEY = 11000,
+}

@@ -1,7 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Article, ArticleDocument } from './article.schema';
-import { ClientSession, Model, ProjectionType, QueryOptions } from 'mongoose';
+import {
+	ClientSession,
+	Model,
+	ProjectionType,
+	QueryFilter,
+	QueryOptions,
+	Types,
+	UpdateResult,
+} from 'mongoose';
 import { CreateArticleDto } from './dtos/create-article.dto';
 import readingTime from 'reading-time';
 import { Category } from '../category/category.schema';
@@ -10,6 +22,11 @@ import { validateJsonPatch } from '../common/helpers/patch.helper';
 import jsonpatch from 'fast-json-patch';
 import { validateInstanceWithDto } from '../common/helpers/dto.helper';
 import { PatchArticleDto } from './dtos/patch-article.dto';
+import { CursorUtil } from '../util/cursor.service';
+import { SortObject } from '../common/helpers/mongo.helper';
+import { SortArticle } from './article.interface';
+import { ListAllOptions } from '../common/interfaces/api.interface';
+import { SORT_ARTICLE_SPECS } from './article.constant';
 
 @Injectable()
 export class ArticleService {
@@ -18,6 +35,7 @@ export class ArticleService {
 		private readonly articleModel: Model<Article>,
 		@InjectModel(Category.name)
 		private readonly categoryModel: Model<Category>,
+		private readonly cursorUtil: CursorUtil,
 	) {}
 
 	findById(
@@ -122,7 +140,7 @@ export class ArticleService {
 		return result ? true : false;
 	}
 
-	async deleteOne(article: ArticleDocument) {
+	async deleteOne(article: ArticleDocument): Promise<UpdateResult> {
 		return article.updateOne({
 			$set: { deletedAt: new Date() },
 		});
@@ -144,5 +162,122 @@ export class ArticleService {
 			{ $inc: { commentsCount: 1 } },
 			{ session },
 		);
+	}
+
+	async listAll(opts: ListAllOptions<SortArticle>) {
+		let { cursor, limit, sort } = opts;
+
+		let query: QueryFilter<Article> = {
+			isPublished: true,
+			deletedAt: { $exists: false },
+		};
+
+		const projection: ProjectionType<Article> = {
+			title: 1,
+			createdAt: 1,
+			commentsCount: 1,
+			likesCount: 1,
+		};
+
+		let sortSpec = this.getSortSpec(sort);
+		const primarySortKey = Object.keys(sortSpec)[0] as keyof Article;
+
+		if (cursor) {
+			const cursorQuery = this.createCursorQuery(sortSpec, cursor);
+			if (cursorQuery) query.$or = cursorQuery;
+		}
+
+		const docs = await this.articleModel
+			.find(query, projection)
+			.sort(sortSpec)
+			.limit((limit as number) + 1)
+			.lean();
+
+		let articles: (Article | null)[] = docs;
+
+		const hasNextPage = docs.length > (limit as number);
+		articles = hasNextPage ? docs.slice(0, -1) : docs;
+		const lastArticle =
+			docs.length > 0 ? (articles.at(-1) as Article) : null;
+
+		const primaryValueForNextCursor =
+			lastArticle && hasNextPage ? lastArticle[primarySortKey] : null;
+
+		const nextCursor = hasNextPage
+			? this.cursorUtil.sign({
+					primary: primaryValueForNextCursor,
+					id: lastArticle?.id ?? lastArticle?._id.toString()!,
+				})
+			: null;
+
+		return {
+			data: articles,
+			meta: {
+				hasNextPage,
+				nextCursor,
+			},
+		};
+	}
+
+	private getSortSpec(
+		sort: SortArticle | string | undefined,
+	): SortObject<Article> {
+		let sortSpec: SortObject<Article> = { createdAt: 'desc', _id: 1 };
+
+		if (sort) {
+			if (typeof sort == 'string') {
+				switch (sort) {
+					case SORT_ARTICLE_SPECS.NEWEST:
+						sortSpec = { createdAt: 'desc', _id: 1 };
+						break;
+					case SORT_ARTICLE_SPECS.OLDEST:
+						sortSpec = { createdAt: 'asc', _id: 1 };
+						break;
+					case SORT_ARTICLE_SPECS.MOST_COMMENTED:
+						sortSpec = { commentsCount: 'desc', _id: 1 };
+						break;
+					case SORT_ARTICLE_SPECS.MOST_LIKED:
+						sortSpec = { likesCount: 'desc', _id: 1 };
+						break;
+					default:
+						sortSpec = { createdAt: 'desc', _id: 1 };
+						break;
+				}
+			} else if (typeof sort == 'object' && !Array.isArray(sort)) {
+				sortSpec = { ...sort, _id: 1 };
+			}
+		}
+
+		return sortSpec;
+	}
+
+	private createCursorQuery(sortSpec: SortObject<Article>, cursor: string) {
+		const primarySortKey = Object.keys(sortSpec)[0] as keyof Article;
+		const primaryOperation =
+			(sortSpec[primarySortKey] as any) > 0 ? '$gt' : '$lt';
+		const uniqueTieBreakerOperation =
+			(sortSpec._id as any) > 0 ? '$gt' : '$lt';
+
+		const decodedCursor = cursor ? this.cursorUtil.verify(cursor) : null;
+
+		if (decodedCursor) {
+			let inputPrimary = decodedCursor.primary as any;
+			const inputUniqueTieBreaker = new Types.ObjectId(decodedCursor.id);
+
+			const dateFields: (keyof Article)[] = ['createdAt'];
+			if (dateFields.includes(inputPrimary)) {
+				inputPrimary = new Date(inputPrimary);
+			}
+
+			return [
+				{ [primarySortKey]: { [primaryOperation]: inputPrimary } },
+				{
+					[primarySortKey]: inputPrimary,
+					_id: { [uniqueTieBreakerOperation]: inputUniqueTieBreaker },
+				},
+			];
+		}
+
+		return null;
 	}
 }

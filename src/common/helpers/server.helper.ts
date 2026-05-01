@@ -3,8 +3,8 @@ import { Server as HttpServer } from 'node:http';
 import { Server as HttpsServer } from 'node:https';
 import { INestApplication, LoggerService } from '@nestjs/common';
 import { LOCAL_HOST_ADDR } from '../constants/server.constant';
-import { styleText } from 'node:util';
 import { ConfigService } from '@nestjs/config';
+import { AppLogger } from '../../logger/logger.service';
 
 export function getLocalIPAddr(): null | string {
 	let localIpAddr: string | null = null;
@@ -47,10 +47,14 @@ export function startHttpServer(
 	serverOptions: {
 		host: string;
 		port: number;
-		logger: LoggerService;
+		logger?: LoggerService;
 	},
 ) {
-	const { host, logger, port } = serverOptions;
+	let { host, logger, port } = serverOptions;
+
+	if (!logger) {
+		logger = new AppLogger({ json: true, colors: true });
+	}
 
 	const protocol = getServerProtocol(app.getHttpServer());
 
@@ -68,8 +72,6 @@ export function startHttpServer(
 	const nodeEnv = config.get('environment.nodeEnv');
 
 	let serverLogMsg = (protocol: string, host: string, port: number) => {
-		if (nodeEnv === 'development')
-			return `Server listening at ${styleText('cyan', `${protocol}://${host}:${port}`)}`;
 		return `Server listening at ${protocol}://${host}:${port}`;
 	};
 

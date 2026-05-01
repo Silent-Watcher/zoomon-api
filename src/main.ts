@@ -9,10 +9,12 @@ import { ApiConfig } from './common/configs/api.config';
 import { registerGlobalMiddlewares } from './common/helpers/app.helper';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import qs from 'qs';
+import { MongoExceptionsFilter } from './common/filters/mongo-exception.filter';
 
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
 		bufferLogs: true,
+		logger: false,
 	});
 
 	const config = app.get(ConfigService);
@@ -42,6 +44,6 @@ async function bootstrap() {
 		}),
 	);
 
-	await startHttpServer(app, { host, logger: systemLogger, port });
+	await startHttpServer(app, { host, port });
 }
 bootstrap();

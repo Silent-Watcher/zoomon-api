@@ -8,7 +8,7 @@ import { mongooseModuleAsyncOptions } from './common/configs/mongo.config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { OtpModule } from './otp/otp.module';
-import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { OptimisticLockInterceptor } from './common/interceptors/optimistic-lock.interceptor';
 import { EtagInterceptor } from './common/interceptors/etag.interceptor';
@@ -19,6 +19,8 @@ import { LikeModule } from './like/like.module';
 import { ArticleModule } from './article/article.module';
 import { CategoryModule } from './category/category.module';
 import { CommentModule } from './comment/comment.module';
+import { UtilModule } from './util/util.module';
+import { MongoExceptionsFilter } from './common/filters/mongo-exception.filter';
 
 @Module({
 	imports: [
@@ -32,9 +34,14 @@ import { CommentModule } from './comment/comment.module';
 		ArticleModule,
 		CategoryModule,
 		CommentModule,
+		UtilModule,
 	],
 	controllers: [AppController],
 	providers: [
+		{
+			provide: APP_FILTER,
+			useClass: MongoExceptionsFilter,
+		},
 		{
 			provide: APP_GUARD,
 			useClass: BlockIfAuthenticatedGuard,

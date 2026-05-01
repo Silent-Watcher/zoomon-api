@@ -1,4 +1,4 @@
-import { Query, Schema } from 'mongoose';
+import { Query, Schema, SortValues } from 'mongoose';
 
 interface WithVersion {
 	version: number;
@@ -29,3 +29,15 @@ export function versionFieldMiddleware<T extends WithVersion>(
 		}
 	});
 }
+
+export function extractMongoDuplicateKeyValueFromError(
+	errMsg: string,
+): string | null {
+	const duplicateKey = errMsg.slice(errMsg.indexOf('{'));
+	if (!duplicateKey) return null;
+	return duplicateKey;
+}
+
+export type SortObject<T> = {
+	[K in keyof Partial<T>]: SortValues;
+};

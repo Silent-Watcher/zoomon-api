@@ -6,3 +6,12 @@ export const MAXIMUM_ARTICLE_SUB_TITLE_LENGTH = 50;
 
 export const MINIMUM_ARTICLE_CONTENT_LENGTH = 10;
 export const MAXIMUM_ARTICLE_CONTENT_LENGTH = 100_000;
+
+export const MAXIMUM_ARTICLE_PER_PAGE = 10;
+
+export enum SORT_ARTICLE_SPECS {
+	NEWEST = 'newest',
+	OLDEST = 'oldest',
+	MOST_LIKED = 'mostLiked',
+	MOST_COMMENTED = 'mostCommented',
+}

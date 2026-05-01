@@ -5,6 +5,7 @@ import { validateSchemaAndReturnData } from '../helpers/validation.helper';
 const apiConfigSchema = z
 	.object({
 		requestTimeoutMs: z.coerce.number().nonnegative().gt(0),
+		cursorSecret: z.string().trim().nonoptional(),
 	})
 	.loose();
 
@@ -12,6 +13,7 @@ export type ApiConfig = {
 	globalPrefix: string;
 	appName: string;
 	requestTimeoutMs: number;
+	cursorSecret: string;
 };
 
 export default registerAs('api', (): ApiConfig => {
@@ -19,6 +21,7 @@ export default registerAs('api', (): ApiConfig => {
 		globalPrefix: 'api',
 		appName: 'zoomon',
 		requestTimeoutMs: process.env.REQUEST_TIMEOUT_MS,
+		cursorSecret: process.env.CURSOR_SECRET,
 	};
 	return validateSchemaAndReturnData(apiConfigSchema, config);
 });

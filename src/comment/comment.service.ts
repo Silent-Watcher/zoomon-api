@@ -96,7 +96,8 @@ export class CommentService {
 		};
 
 		return this.commentsModel
-			.find(query)
-			.sort(sort as Record<string, SortOrder | { $meta: any }>);
+			.find(query, { version: 0, __v: 0, updatedAt: 0, path: 0 })
+			.sort(sort as Record<string, SortOrder | { $meta: any }>)
+			.lean();
 	}
 }

@@ -16,9 +16,9 @@ export function enableSystemLogger(app: INestApplication): LoggerService {
 			infer: true,
 		}) == AppEnvironment.Development
 			? {
-					json: false,
+					json: true,
 					colors: true,
-					compact: false,
+					compact: true,
 					prefix: 'zoomon',
 				}
 			: {

@@ -19,8 +19,9 @@ import { ReplaceCategoryDto } from './dtos/update-category.dto';
 import { CacheWithEtag } from '../common/decorators/cache-with-etag.decorator';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import type { SortCategory } from './category.interface';
-import { SortCategoryPipe } from './pipes/sort-category.pipe';
 import { MAXIMUM_CATEGORY_PER_PAGE } from './category.constant';
+import { sortPipe } from '../common/pipes/sort.pipe';
+import { SortCategorySchema } from './validation/sort.schema';
 @Etag('id', CategoryService)
 @Controller('categories')
 export class CategoryController {
@@ -37,7 +38,7 @@ export class CategoryController {
 		return this.categoryService.getOne(id);
 	}
 
-	@UsePipes(SortCategoryPipe)
+	@UsePipes(sortPipe(SortCategorySchema))
 	@Get()
 	listAll(
 		@Query('sort', new DefaultValuePipe({ name: 1 })) sort: SortCategory,

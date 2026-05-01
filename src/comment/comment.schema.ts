@@ -97,3 +97,5 @@ export class Comment {
 
 export type CommentDocument = HydratedDocument<Comment>;
 export const CommentSchema = SchemaFactory.createForClass(Comment);
+
+CommentSchema.index({ owner: 1, status: 1, deletedAt: 1 });

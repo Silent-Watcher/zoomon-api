@@ -1,6 +1,8 @@
 import {
+	BadRequestException,
 	ConflictException,
 	Injectable,
+	InternalServerErrorException,
 	NotAcceptableException,
 	NotFoundException,
 } from '@nestjs/common';
@@ -17,8 +19,12 @@ import {
 import { ReplaceCategoryDto } from './dtos/update-category.dto';
 import { OptimisticLockableService } from '../common/interfaces/optimistic-lockable.interface';
 import { Article } from '../article/article.schema';
-import { ListAllOptions, SortCategory } from './category.interface';
+import { SortCategory } from './category.interface';
 import { MAXIMUM_CATEGORY_PER_PAGE } from './category.constant';
+import { ListAllOptions } from '../common/interfaces/api.interface';
+import { MongoServerError } from 'mongodb';
+import { MONGODB_ERROR_CODES } from '../common/constants/mongo.constant';
+import { extractMongoDuplicateKeyValueFromError } from '../common/helpers/mongo.helper';
 
 @Injectable()
 export class CategoryService implements OptimisticLockableService {
@@ -37,18 +43,33 @@ export class CategoryService implements OptimisticLockableService {
 	async create(
 		dto: CreateCategoryDto,
 	): Promise<Pick<Category, 'name' | 'id' | 'createdAt'>> {
-		const { name: newName } = dto;
+		try {
+			const { name: newName } = dto;
 
-		const exists = await this.categoryModel
-			.exists({ name: newName })
-			.lean();
-		if (exists) throw new ConflictException(`already exists`);
+			const exists = await this.categoryModel
+				.exists({ name: newName })
+				.lean();
+			if (exists) throw new ConflictException(`already exists`);
 
-		const { name, id, createdAt } = await this.categoryModel.create({
-			name: newName,
-		});
+			const { name, id, createdAt } = await this.categoryModel.create({
+				name: newName,
+			});
 
-		return { name, id, createdAt };
+			return { name, id, createdAt };
+		} catch (error) {
+			//! TODO: put this inside exception filter!
+			if (error instanceof MongoServerError) {
+				if (MONGODB_ERROR_CODES.DUPLICATE_KEY === error.code) {
+					const duplicateKey = extractMongoDuplicateKeyValueFromError(
+						error.message,
+					);
+					throw new BadRequestException(
+						`Duplicate key error ${duplicateKey}`,
+					);
+				}
+			}
+			throw new InternalServerErrorException('failed to create');
+		}
 	}
 
 	async replaceOne(
@@ -88,20 +109,20 @@ export class CategoryService implements OptimisticLockableService {
 		return { acknowledged, deletedCount };
 	}
 
-	async listAll(opts: ListAllOptions) {
+	async listAll(opts: ListAllOptions<SortCategory>) {
 		let { sort, page, limit } = opts;
 
 		let query: QueryFilter<Category> = {};
 
 		let totalDocsQuery = this.categoryModel.countDocuments(query).lean();
 
-		const skip = limit * (page - 1);
+		const skip = (limit as number) * ((page as number) - 1);
 
 		let dataQuery = this.categoryModel
 			.find(query, { id: 1, name: 1 })
-			.sort(sort)
+			.sort(sort as any)
 			.skip(skip)
-			.limit(limit)
+			.limit(limit as number)
 			.lean();
 
 		const [totalDocs, data] = await Promise.all([
@@ -114,7 +135,7 @@ export class CategoryService implements OptimisticLockableService {
 			meta: {
 				total: totalDocs,
 				page,
-				pages: Math.ceil(totalDocs / limit),
+				pages: Math.ceil(totalDocs / (limit as number)),
 			},
 		};
 	}

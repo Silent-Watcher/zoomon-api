@@ -16,7 +16,6 @@ export class Article {
 	@Prop({
 		required: true,
 		unique: true,
-		index: true,
 		trim: true,
 		minlength: 5,
 		maxLength: 50,
@@ -29,10 +28,11 @@ export class Article {
 	@Prop({
 		required: true,
 		default(this: ArticleDocument) {
-			return this.title ? slugify(this.title) : slugify(this.id);
+			return this.title
+				? slugify(this.title, { lower: true, strict: true })
+				: slugify(this.id);
 		},
 		trim: true,
-		index: true,
 		unique: true,
 	})
 	declare slug: string;
@@ -41,7 +41,6 @@ export class Article {
 		type: [Types.ObjectId],
 		required: true,
 		ref: User.name,
-		index: true,
 	})
 	declare authorId: Types.ObjectId;
 
@@ -69,7 +68,7 @@ export class Article {
 	@Prop({ required: true, default: false })
 	declare isPremium: boolean;
 
-	@Prop({ required: false, default: undefined })
+	@Prop({ required: false, default: undefined, sparse: true })
 	deletedAt?: Date;
 
 	declare createdAt: Date;
@@ -78,3 +77,69 @@ export class Article {
 
 export type ArticleDocument = HydratedDocument<Article>;
 export const ArticleSchema = SchemaFactory.createForClass(Article);
+
+ArticleSchema.index({ isPublished: 1, deletedAt: 1, createdAt: -1, _id: 1 });
+ArticleSchema.index({ isPublished: 1, deletedAt: 1, likesCount: -1, _id: 1 });
+ArticleSchema.index({
+	isPublished: 1,
+	deletedAt: 1,
+	commentsCount: -1,
+	_id: 1,
+});
+
+// Premium filtering
+ArticleSchema.index({
+	isPremium: 1,
+	isPublished: 1,
+	deletedAt: 1,
+	createdAt: -1,
+	_id: 1,
+});
+ArticleSchema.index({
+	isPremium: 1,
+	isPublished: 1,
+	deletedAt: 1,
+	likesCount: -1,
+	_id: 1,
+});
+
+// Author-specific queries
+ArticleSchema.index({
+	authorId: 1,
+	isPublished: 1,
+	deletedAt: 1,
+	createdAt: -1,
+	_id: 1,
+});
+ArticleSchema.index({
+	authorId: 1,
+	isPremium: 1,
+	isPublished: 1,
+	deletedAt: 1,
+	createdAt: -1,
+	_id: 1,
+});
+
+// Category-specific queries
+ArticleSchema.index({
+	categories: 1,
+	isPublished: 1,
+	deletedAt: 1,
+	createdAt: -1,
+	_id: 1,
+});
+ArticleSchema.index({
+	categories: 1,
+	isPublished: 1,
+	deletedAt: 1,
+	likesCount: -1,
+	_id: 1,
+});
+ArticleSchema.index({
+	categories: 1,
+	isPremium: 1,
+	isPublished: 1,
+	deletedAt: 1,
+	createdAt: -1,
+	_id: 1,
+});
