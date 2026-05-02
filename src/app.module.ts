@@ -21,6 +21,7 @@ import { CategoryModule } from './category/category.module';
 import { CommentModule } from './comment/comment.module';
 import { UtilModule } from './util/util.module';
 import { MongoExceptionsFilter } from './common/filters/mongo-exception.filter';
+import { ClamavModule } from './clamav/clamav.module';
 
 @Module({
 	imports: [
@@ -35,6 +36,7 @@ import { MongoExceptionsFilter } from './common/filters/mongo-exception.filter';
 		CategoryModule,
 		CommentModule,
 		UtilModule,
+		ClamavModule,
 	],
 	controllers: [AppController],
 	providers: [

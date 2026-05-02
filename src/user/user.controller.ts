@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Patch,
+	Post,
+	UploadedFile,
+	UseInterceptors,
+} from '@nestjs/common';
 import { USER_CONTEXT_KEY } from '../common/constants/server.constant';
 import { CacheWithEtag } from '../common/decorators/cache-with-etag.decorator';
 import { Etag } from '../common/decorators/etag.decorator';
@@ -8,6 +16,9 @@ import type { UserDocument } from './user.schema';
 import { UserService } from './user.service';
 import { SetPasswordDto } from './dtos/set-password.dto';
 import { Operation } from 'fast-json-patch';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { parseFilePipe } from '../common/constants/file.constant';
+import type { Multer } from 'multer';
 
 @Etag(USER_CONTEXT_KEY)
 @Controller('users')
@@ -38,4 +49,11 @@ export class UserController {
 		const { password: newPassword, oldPassword } = passwordDto;
 		return this.userService.setPassword(newPassword, user, oldPassword);
 	}
+
+	@Post('avatars')
+	@UseInterceptors(FileInterceptor('avatar'))
+	uploadAvatarImage(
+		@UploadedFile(parseFilePipe)
+		file: Express.Multer.File,
+	) {}
 }
