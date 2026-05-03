@@ -9,8 +9,9 @@ import { CLAMAV } from '../common/constants/clamav.constant';
 	providers: [
 		{
 			provide: CLAMAV,
-			useFactory(clamConfig: ConfigType<typeof clamavConfig>) {
-				return new NodeClam().init(clamConfig);
+			async useFactory(clamConfig: ConfigType<typeof clamavConfig>) {
+				const clamscan = await new NodeClam().init(clamConfig);
+				return clamscan;
 			},
 			inject: [clamavConfig.KEY],
 		},

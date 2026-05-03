@@ -1,8 +1,8 @@
 import { registerAs } from '@nestjs/config';
 import z from 'zod';
-import { validateSchemaAndReturnData } from '../helpers/validation.helper';
 import type { Options } from 'clamscan';
 import NodeClam from 'clamscan';
+import { fromError } from 'zod-validation-error';
 
 const clamavConfigSchema = z
 	.object({
@@ -25,5 +25,13 @@ export default registerAs('clamav', (): NodeClam.Options => {
 		preference: 'clamdscan',
 	} as const;
 
-	return validateSchemaAndReturnData(clamavConfigSchema, config);
+	const parseResult = clamavConfigSchema.safeParse(config.clamdscan);
+
+	if (!parseResult.success) {
+		throw new Error(
+			`Config validation error: ${fromError(parseResult.error).toString()}`,
+		);
+	}
+
+	return config;
 });

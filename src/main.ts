@@ -9,18 +9,15 @@ import { ApiConfig } from './common/configs/api.config';
 import { registerGlobalMiddlewares } from './common/helpers/app.helper';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import qs from 'qs';
-import { MongoExceptionsFilter } from './common/filters/mongo-exception.filter';
 
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
 		bufferLogs: true,
-		logger: false,
 	});
-
 	const config = app.get(ConfigService);
 	const apiConfig = config.get<ApiConfig>('api', { infer: true });
 
-	const systemLogger = enableSystemLogger(app);
+	enableSystemLogger(app);
 
 	app.setGlobalPrefix(apiConfig.globalPrefix);
 	app.enableVersioning({

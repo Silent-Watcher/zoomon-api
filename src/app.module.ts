@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { LoggerModule } from './logger/logger.module';
 import { ConfigModule } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
 import { configModuleOptiosn } from './common/configs';
 import { MongooseModule } from '@nestjs/mongoose';
 import { mongooseModuleAsyncOptions } from './common/configs/mongo.config';
@@ -22,12 +23,27 @@ import { CommentModule } from './comment/comment.module';
 import { UtilModule } from './util/util.module';
 import { MongoExceptionsFilter } from './common/filters/mongo-exception.filter';
 import { ClamavModule } from './clamav/clamav.module';
+import { UploadModule } from './upload/upload.module';
+import { BullModule } from '@nestjs/bullmq';
+import redisConfig from './common/configs/redis.config';
+import { ImageQueueModule } from './queues/image-queue/image-queue.module';
 
 @Module({
 	imports: [
-		LoggerModule,
 		ConfigModule.forRoot(configModuleOptiosn),
 		MongooseModule.forRootAsync(mongooseModuleAsyncOptions),
+		BullModule.forRootAsync({
+			useFactory(redisConf: ConfigType<typeof redisConfig>) {
+				return {
+					connection: {
+						host: redisConf.host,
+						port: redisConf.port,
+					},
+				};
+			},
+			inject: [redisConfig.KEY],
+		}),
+		LoggerModule,
 		AuthModule,
 		UserModule,
 		OtpModule,
@@ -37,6 +53,8 @@ import { ClamavModule } from './clamav/clamav.module';
 		CommentModule,
 		UtilModule,
 		ClamavModule,
+		ImageQueueModule,
+		UploadModule,
 	],
 	controllers: [AppController],
 	providers: [

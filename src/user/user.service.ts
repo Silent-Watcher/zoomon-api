@@ -24,11 +24,15 @@ import jsonpatch from 'fast-json-patch';
 import { PatchUserDto } from './dtos/patch-user.dto';
 import { validateInstanceWithDto } from '../common/helpers/dto.helper';
 import { validateJsonPatch } from '../common/helpers/patch.helper';
-
+import { v4 as uuidV4 } from 'uuid';
+import { UploadService } from '../upload/upload.service';
+import { USER_AVATAR_UPLOAD_DIRECTORY } from '../common/constants/file.constant';
+import { createHash } from 'node:crypto';
 @Injectable()
 export class UserService implements OptimisticLockableService {
 	constructor(
 		@InjectModel(User.name) private readonly userModel: Model<User>,
+		private readonly uploadService: UploadService,
 	) {}
 
 	findOneByIdentifier(
@@ -111,7 +115,6 @@ export class UserService implements OptimisticLockableService {
 
 		validateJsonPatch(jsonPatch, doc);
 
-		// ? you can use 'structuredClone' instead of 'JSON.parse(JSON.stringify(doc))'
 		const docClone = JSON.parse(JSON.stringify(doc));
 		const patchResult = jsonpatch.applyPatch<User>(
 			docClone,
@@ -133,5 +136,26 @@ export class UserService implements OptimisticLockableService {
 		);
 
 		return { acknowledged, modifiedCount };
+	}
+
+	async uploadAvatar(file: Express.Multer.File, user: UserDocument) {
+		const userId = user.id ?? user._id.toHexString();
+		const fileName = createHash('md5')
+			.update(`${Date.now()}.${userId}.${uuidV4()}}`)
+			.digest('hex');
+
+		const temporarilyPath =
+			await this.uploadService.uploadFileToTemporarilyDisk(
+				USER_AVATAR_UPLOAD_DIRECTORY,
+				fileName,
+				file.buffer,
+			);
+
+		return temporarilyPath;
+		// run a background job (pass the file and user)
+		//---> scan file for virus
+		//----> create sizes and convert
+		//---> upload each of them in paralel
+		//---> store addr in database
 	}
 }

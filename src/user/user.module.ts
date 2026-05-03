@@ -4,6 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './user.schema';
 import { UserController } from './user.controller';
 import { versionFieldMiddleware } from '../common/helpers/mongo.helper';
+import { ClamavModule } from '../clamav/clamav.module';
+import { UploadModule } from '../upload/upload.module';
 
 @Module({
 	imports: [
@@ -17,6 +19,8 @@ import { versionFieldMiddleware } from '../common/helpers/mongo.helper';
 				},
 			},
 		]),
+		ClamavModule,
+		UploadModule,
 	],
 	providers: [UserService],
 	exports: [UserService, MongooseModule],

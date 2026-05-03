@@ -17,8 +17,9 @@ import { UserService } from './user.service';
 import { SetPasswordDto } from './dtos/set-password.dto';
 import { Operation } from 'fast-json-patch';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { parseFilePipe } from '../common/constants/file.constant';
 import type { Multer } from 'multer';
+import { parseUserAvatarFilePipe } from '../common/constants/file.constant';
+// import { parseUserAvatarFilePipe, userAvatarDiskStorage } from '../common/constants/file.constant';
 
 @Etag(USER_CONTEXT_KEY)
 @Controller('users')
@@ -53,7 +54,10 @@ export class UserController {
 	@Post('avatars')
 	@UseInterceptors(FileInterceptor('avatar'))
 	uploadAvatarImage(
-		@UploadedFile(parseFilePipe)
+		@UploadedFile(parseUserAvatarFilePipe)
 		file: Express.Multer.File,
-	) {}
+		@User() user: UserDocument,
+	) {
+		return this.userService.uploadAvatar(file, user);
+	}
 }
