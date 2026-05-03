@@ -3,5 +3,5 @@ export interface UniqueFileNameOpts {
 	originalFileName: string;
 	size: string;
 	suffix: string;
-	extension: string;
+	extension: `.${string}`;
 }

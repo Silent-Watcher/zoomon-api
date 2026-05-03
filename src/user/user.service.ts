@@ -3,7 +3,6 @@ import {
 	Injectable,
 	InternalServerErrorException,
 	NotAcceptableException,
-	NotFoundException,
 } from '@nestjs/common';
 import { User, UserDocument } from './user.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -28,11 +27,14 @@ import { v4 as uuidV4 } from 'uuid';
 import { UploadService } from '../upload/upload.service';
 import { USER_AVATAR_UPLOAD_DIRECTORY } from '../common/constants/file.constant';
 import { createHash } from 'node:crypto';
+import { ImageQueueService } from '../queues/image-queue/image-queue.service';
+import { AVATAR_IMAGE_JOB_DATA } from '../queues/image-queue/image-queue.interface';
 @Injectable()
 export class UserService implements OptimisticLockableService {
 	constructor(
 		@InjectModel(User.name) private readonly userModel: Model<User>,
 		private readonly uploadService: UploadService,
+		private readonly imageQueueService: ImageQueueService,
 	) {}
 
 	findOneByIdentifier(
@@ -151,7 +153,23 @@ export class UserService implements OptimisticLockableService {
 				file.buffer,
 			);
 
-		return temporarilyPath;
+		// TODO: complete AVATAR_IMAGE_JOB_DATA
+		// return temporarilyPath;
+		const jobId = uuidV4();
+		await this.imageQueueService.addAvatarJob<AVATAR_IMAGE_JOB_DATA>(
+			{},
+			{
+				removeOnComplete: true,
+				removeOnFail: false,
+				jobId,
+			},
+		);
+
+		return {
+			message: 'avatar image is uploading ...',
+			jobId,
+		};
+
 		// run a background job (pass the file and user)
 		//---> scan file for virus
 		//----> create sizes and convert

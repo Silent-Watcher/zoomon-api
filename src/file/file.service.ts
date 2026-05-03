@@ -26,7 +26,7 @@ export class FileService {
 		const hashName = createHash('md5')
 			.update(`${Date.now()}.${originalFileName}.${userId}.${uuidV4()}}`)
 			.digest('hex');
-		const filename = `${hashName}-${size}-${suffix}.${extension}`;
+		const filename = `${hashName}-${size}-${suffix}${extension}`;
 		return filename;
 	}
 }

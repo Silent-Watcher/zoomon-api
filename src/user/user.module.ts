@@ -6,9 +6,11 @@ import { UserController } from './user.controller';
 import { versionFieldMiddleware } from '../common/helpers/mongo.helper';
 import { ClamavModule } from '../clamav/clamav.module';
 import { UploadModule } from '../upload/upload.module';
+import { ImageQueueModule } from '../queues/image-queue/image-queue.module';
 
 @Module({
 	imports: [
+		ImageQueueModule,
 		MongooseModule.forFeatureAsync([
 			{
 				name: User.name,
