@@ -8,6 +8,7 @@ import sessionConfig from './session.config';
 import redisConfig from './redis.config';
 import csrfConfig from './csrf.config';
 import clamavConfig from './clamav.config';
+import storageConfig from './storage.config';
 
 export const configModuleOptiosn: ConfigModuleOptions = {
 	ignoreEnvFile: true,
@@ -24,5 +25,6 @@ export const configModuleOptiosn: ConfigModuleOptions = {
 		redisConfig,
 		csrfConfig,
 		clamavConfig,
+		storageConfig,
 	],
 };

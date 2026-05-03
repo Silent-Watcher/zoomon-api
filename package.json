@@ -19,7 +19,8 @@
 		"docker:mongo:dev:initial:replica": "docker exec zoomondb-rs mongosh --eval \"rs.initiate()\"",
 		"docker:mongo:dev:verify:replica": "docker exec -it zoomondb-rs mongosh --eval \"rs.status().ok\"",
 		"docker:mongo:dev:reconfig:replica:host": "docker exec -it zoomondb-rs mongosh --eval \"rs.initiate({_id:'rs0',members:[{_id:0,host:'127.0.0.1:27017'}]})\"",
-		"docker:mongo:dev:verify:replica:host": "docker exec -it mongo-rs mongosh --eval \"rs.conf().members\""
+		"docker:mongo:dev:verify:replica:host": "docker exec -it mongo-rs mongosh --eval \"rs.conf().members\"",
+		"docker:minio": "docker run -d --name minio -p 9000:9000 -p 9001:9001 -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin123 -v minio-data:/data quay.io/minio/minio:latest server /data --console-address \": 9001\""
 	},
 	"dependencies": {
 		"@casl/ability": "^6.8.1",
@@ -43,6 +44,7 @@
 		"helmet": "^8.1.0",
 		"install": "^0.13.0",
 		"ioredis": "^5.10.1",
+		"minio": "^8.0.7",
 		"mongoose": "^9.4.1",
 		"multer": "^2.1.1",
 		"qs": "^6.15.1",

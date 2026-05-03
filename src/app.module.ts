@@ -27,6 +27,7 @@ import { UploadModule } from './upload/upload.module';
 import { BullModule } from '@nestjs/bullmq';
 import redisConfig from './common/configs/redis.config';
 import { ImageQueueModule } from './queues/image-queue/image-queue.module';
+import { FileModule } from './file/file.module';
 
 @Module({
 	imports: [
@@ -55,6 +56,7 @@ import { ImageQueueModule } from './queues/image-queue/image-queue.module';
 		ClamavModule,
 		ImageQueueModule,
 		UploadModule,
+		FileModule,
 	],
 	controllers: [AppController],
 	providers: [
