@@ -22,7 +22,7 @@ import { CategoryModule } from './category/category.module';
 import { CommentModule } from './comment/comment.module';
 import { UtilModule } from './util/util.module';
 import { MongoExceptionsFilter } from './common/filters/mongo-exception.filter';
-import { ClamavModule } from './clamav/clamav.module';
+// import { ClamavModule } from './clamav/clamav.module';
 import { UploadModule } from './upload/upload.module';
 import { BullModule } from '@nestjs/bullmq';
 import redisConfig from './common/configs/redis.config';
@@ -53,7 +53,7 @@ import { FileModule } from './file/file.module';
 		CategoryModule,
 		CommentModule,
 		UtilModule,
-		ClamavModule,
+		// ClamavModule,
 		ImageQueueModule,
 		UploadModule,
 		FileModule,

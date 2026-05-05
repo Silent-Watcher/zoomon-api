@@ -30,7 +30,7 @@ export default registerAs('storage', () => {
 			accessKey: process.env.MINIO_ACCESS_KEY!,
 			secretKey: process.env.MINIO_SECRET_KEY!,
 			bucketName: process.env.MINIO_BUCKET_NAME!,
-			useSsl: Boolean(process.env.MINIO_USE_SSL),
+			useSsl: process.env.MINIO_USE_SSL == 'false' ? false : true,
 			baseUrl: process.env.MINIO_PUBLIC_URL!,
 		},
 	};
