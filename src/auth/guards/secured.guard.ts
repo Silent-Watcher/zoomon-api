@@ -35,7 +35,7 @@ export class Secured implements CanActivate {
 		if (userId) {
 			const user = await this.userService.findById(
 				userId,
-				{ __v: 0 },
+				{ __v: 0, version: 0 },
 				false,
 			);
 

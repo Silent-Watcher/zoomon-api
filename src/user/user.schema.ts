@@ -1,5 +1,6 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { getGravatarUrl } from '../common/helpers/gravatar.helper';
 
 @Schema({
 	id: true,
@@ -60,7 +61,12 @@ export class User {
 			gravatar: {
 				type: String,
 				required: false,
-				default: undefined,
+				default: function (this: UserDocument): string | undefined {
+					if (this.email) {
+						return getGravatarUrl(this.email);
+					}
+					return undefined;
+				},
 			},
 		}),
 	)

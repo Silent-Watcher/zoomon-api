@@ -68,20 +68,19 @@ export class ImageConsumer extends WorkerHost {
 			),
 		);
 
-		const uploadedImages = uploadResults.map((result) => {
-			const url = result.url;
-			const suffix = result.url
-				.slice(url.indexOf('_'), url.indexOf('.'))
-				.replace('_', '');
-			return { suffix, url };
-		});
-
-		const query = Object.assign(
-			{},
-			...uploadedImages.map((image) => {
+		const uploadedImages = uploadResults
+			.map((result) => {
+				const url = result.url;
+				const suffix = result.url
+					.slice(url.indexOf('_'), url.indexOf('.'))
+					.replace('_', '');
+				return { suffix, url };
+			})
+			.map((image) => {
 				return { [image['suffix']]: image['url'] };
-			}),
-		);
+			});
+
+		const query = Object.assign({}, ...uploadedImages);
 
 		await this.userModel.updateOne(
 			{ _id: userId },

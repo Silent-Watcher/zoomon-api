@@ -5,6 +5,7 @@ import session from 'express-session';
 import helmet from 'helmet';
 import { doubleCsrf, DoubleCsrfConfigOptions } from 'csrf-csrf';
 import * as bodyParser from 'body-parser';
+import compression from 'compression';
 
 export function registerGlobalMiddlewares(app: INestApplication): void {
 	const config = app.get(ConfigService);
@@ -22,6 +23,9 @@ export function registerGlobalMiddlewares(app: INestApplication): void {
 			type: ['application/json', 'application/json-patch+json'],
 		}),
 	);
+
+	//? comment this if you are using Reverse Proxy
+	app.use(compression());
 	app.use(helmet());
 	app.use(cookieParser());
 	app.use(session(sessionOptions));
