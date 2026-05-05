@@ -92,6 +92,8 @@ export class ImageConsumer extends WorkerHost {
 			},
 		);
 
+		await this.fileService.cleanupTempFile(filePath);
+
 		return uploadedImages;
 	}
 }
