@@ -6,6 +6,14 @@ meta {
 
 post {
   url: {{baseUrl}}/users/avatars
-  body: none
+  body: multipartForm
   auth: inherit
+}
+
+headers {
+  x-csrf-token: 143dafef4746fba37dc0549f179948d694e0aaa0ceb664d7622879668fe21ae2.9089b070106d72852922b156cc1c4b372532b2e4a31c8503fe983f30e2595bfbe4cdc1d27889016e42c36ff446d88f015b0017139e92c74fd07148968000b8a1
+}
+
+body:multipart-form {
+  avatar: @file(/home/ali/Downloads/384f70fa-4a8c-4c48-ba91-ff8f60ba62e6.png)
 }

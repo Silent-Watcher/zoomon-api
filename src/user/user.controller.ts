@@ -2,6 +2,8 @@ import {
 	Body,
 	Controller,
 	Get,
+	HttpCode,
+	HttpStatus,
 	Patch,
 	Post,
 	UploadedFile,
@@ -18,7 +20,7 @@ import { SetPasswordDto } from './dtos/set-password.dto';
 import { Operation } from 'fast-json-patch';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Multer } from 'multer';
-import { parseUserAvatarFilePipe } from '../common/constants/file.constant';
+import { parseUserAvatarFilePipe } from '../file/file.constant';
 // import { parseUserAvatarFilePipe, userAvatarDiskStorage } from '../common/constants/file.constant';
 
 @Etag(USER_CONTEXT_KEY)
@@ -51,13 +53,14 @@ export class UserController {
 		return this.userService.setPassword(newPassword, user, oldPassword);
 	}
 
+	@HttpCode(HttpStatus.ACCEPTED)
 	@Post('avatars')
 	@UseInterceptors(FileInterceptor('avatar'))
 	uploadAvatarImage(
 		@UploadedFile(parseUserAvatarFilePipe)
 		file: Express.Multer.File,
-		@User() user: UserDocument,
+		@User('_id') userId: string,
 	) {
-		return this.userService.uploadAvatar(file, user);
+		return this.userService.uploadAvatar(file, userId);
 	}
 }

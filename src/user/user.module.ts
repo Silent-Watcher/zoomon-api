@@ -7,6 +7,7 @@ import { versionFieldMiddleware } from '../common/helpers/mongo.helper';
 // import { ClamavModule } from '../clamav/clamav.module';
 import { UploadModule } from '../upload/upload.module';
 import { ImageQueueModule } from '../queues/image-queue/image-queue.module';
+import { FileModule } from '../file/file.module';
 
 @Module({
 	imports: [
@@ -22,6 +23,7 @@ import { ImageQueueModule } from '../queues/image-queue/image-queue.module';
 			},
 		]),
 		// ClamavModule,
+		FileModule,
 		UploadModule,
 	],
 	providers: [UserService],

@@ -25,16 +25,18 @@ import { validateInstanceWithDto } from '../common/helpers/dto.helper';
 import { validateJsonPatch } from '../common/helpers/patch.helper';
 import { v4 as uuidV4 } from 'uuid';
 import { UploadService } from '../upload/upload.service';
-import { USER_AVATAR_UPLOAD_DIRECTORY } from '../common/constants/file.constant';
 import { createHash } from 'node:crypto';
 import { ImageQueueService } from '../queues/image-queue/image-queue.service';
 import { AVATAR_IMAGE_JOB_DATA } from '../queues/image-queue/image-queue.interface';
+import { FileService } from '../file/file.service';
+import { USER_AVATAR_UPLOAD_DIRECTORY } from '../file/file.constant';
 @Injectable()
 export class UserService implements OptimisticLockableService {
 	constructor(
 		@InjectModel(User.name) private readonly userModel: Model<User>,
 		private readonly uploadService: UploadService,
 		private readonly imageQueueService: ImageQueueService,
+		private readonly fileService: FileService,
 	) {}
 
 	findOneByIdentifier(
@@ -140,11 +142,11 @@ export class UserService implements OptimisticLockableService {
 		return { acknowledged, modifiedCount };
 	}
 
-	async uploadAvatar(file: Express.Multer.File, user: UserDocument) {
-		const userId = user.id ?? user._id.toHexString();
-		const fileName = createHash('md5')
-			.update(`${Date.now()}.${userId}.${uuidV4()}}`)
-			.digest('hex');
+	async uploadAvatar(file: Express.Multer.File, userId: string) {
+		const fileName = this.fileService.generateUniqueTempFilename({
+			userId,
+			originalFileName: file.originalname,
+		});
 
 		const temporarilyPath =
 			await this.uploadService.uploadFileToTemporarilyDisk(
@@ -153,27 +155,28 @@ export class UserService implements OptimisticLockableService {
 				file.buffer,
 			);
 
+		const imageOriginalSizeInfo =
+			await this.fileService.getOriginalImageSizeInfo(file.buffer);
+
 		// TODO: complete AVATAR_IMAGE_JOB_DATA
 		// return temporarilyPath;
 		const jobId = uuidV4();
 		await this.imageQueueService.addAvatarJob<AVATAR_IMAGE_JOB_DATA>(
-			{},
+			{
+				filePath: temporarilyPath,
+				originalSizeInfo: imageOriginalSizeInfo,
+				originalFileName: file.originalname,
+				userId,
+			},
 			{
 				removeOnComplete: true,
 				removeOnFail: false,
 				jobId,
 			},
 		);
-
 		return {
 			message: 'avatar image is uploading ...',
 			jobId,
 		};
-
-		// run a background job (pass the file and user)
-		//---> scan file for virus
-		//----> create sizes and convert
-		//---> upload each of them in paralel
-		//---> store addr in database
 	}
 }

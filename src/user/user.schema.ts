@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
 @Schema({
@@ -48,6 +48,23 @@ export class User {
 
 	@Prop({ required: false, default: undefined })
 	bio?: string;
+
+	@Prop(
+		raw({
+			upload: {
+				type: Map,
+				of: String,
+				required: false,
+				default: undefined,
+			},
+			gravatar: {
+				type: String,
+				required: false,
+				default: undefined,
+			},
+		}),
+	)
+	avatars?: Record<string, any>;
 
 	@Prop({
 		required: true,
