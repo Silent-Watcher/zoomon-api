@@ -5,6 +5,8 @@ import { Connection, Model } from 'mongoose';
 import { Article, ArticleDocument } from '../article/article.schema';
 import { ArticleService } from '../article/article.service';
 import { LikeResult } from './like.interface';
+import { CommentDocument } from '../comment/comment.schema';
+import { Comment } from '../comment/comment.schema';
 
 @Injectable()
 export class LikeService {
@@ -55,6 +57,60 @@ export class LikeService {
 			await newLike.save({ session });
 
 			await article.updateOne({ $inc: { likesCount: 1 } }, { session });
+
+			Object.assign<
+				LikeResult,
+				Pick<LikeResult, 'liked' | 'likedBefore'>
+			>(result, { liked: true, likedBefore: false });
+		}
+
+		await session.commitTransaction();
+		await session.endSession();
+
+		return result;
+	}
+
+	async SubmitOrRetriveLikeForComment(
+		userId: string,
+		comment: CommentDocument,
+	) {
+		const foundedLike = await this.likeModel.findOne(
+			{
+				owner: userId,
+				entityType: Comment.name,
+			},
+			{ _id: 1 },
+			{ lean: false },
+		);
+
+		const session = await this.connection.startSession();
+		session.startTransaction();
+
+		const result: LikeResult = {
+			by: userId,
+			articleId: comment.id,
+			liked: false,
+			likedBefore: false,
+		};
+
+		if (foundedLike) {
+			await comment.updateOne({ $inc: { likesCount: -1 } }, { session });
+			await foundedLike.deleteOne({ lean: true, session });
+
+			Object.assign<
+				LikeResult,
+				Pick<LikeResult, 'liked' | 'likedBefore'>
+			>(result, { liked: false, likedBefore: true });
+		} else {
+			const newLike = new this.likeModel({
+				entityId: comment.id,
+				owner: userId,
+				entityType: Comment.name,
+			});
+
+			await newLike.save({ session });
+
+			await comment.updateOne({ $inc: { likesCount: 1 } }, { session });
 
 			Object.assign<
 				LikeResult,

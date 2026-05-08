@@ -1,9 +1,10 @@
 import { Controller, Param, Post } from '@nestjs/common';
 import { User } from '../user/decorators/user.decorator';
-import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import { LikeService } from './like.service';
 import { articleByIdPipe } from '../article/pipes/article-by-id.pipe';
 import type { ArticleDocument } from '../article/article.schema';
+import { commentByIdPipe } from '../comment/pipes/commentById.pipe';
+import type { CommentDocument } from '../comment/comment.schema';
 
 @Controller('likes')
 export class LikeController {
@@ -24,6 +25,12 @@ export class LikeController {
 	@Post('/comments/:id')
 	SubmitOrRetriveLikeForComment(
 		@User('id') userId: string,
-		@Param('id', ParseObjectIdPipe) articleId: string,
-	) {}
+		@Param(
+			'id',
+			commentByIdPipe({ likesCount: 1, _id: 1 }, { lean: false }),
+		)
+		comment: CommentDocument,
+	) {
+		return this.likeService.SubmitOrRetriveLikeForComment(userId, comment);
+	}
 }
