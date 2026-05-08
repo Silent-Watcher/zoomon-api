@@ -1,9 +1,13 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { NOTIF_JOBS, NOTIF_QUEUE } from '../../common/constants/queue.constant';
+import { NOTIF_QUEUE } from '../../common/constants/queue.constant';
 import { Job } from 'bullmq';
-import { COMMENT_REPLIED_JOB_DATA } from './notif-queue.interface';
-
-@Processor(NOTIF_QUEUE)
+@Processor(NOTIF_QUEUE, {
+	concurrency: 10,
+	limiter: {
+		max: 100,
+		duration: 1000,
+	},
+})
 export class NotifConsumer extends WorkerHost {
 	constructor() {
 		super();
@@ -11,16 +15,21 @@ export class NotifConsumer extends WorkerHost {
 
 	process(job: Job, _token?: string): Promise<any> {
 		switch (job.name) {
-			case NOTIF_JOBS.COMMENT_REPLIED:
-				return this.processCommentRepliedJobNotif({});
+			case 'send':
+				return this.processNotification({});
+			case 'batch':
+				return this.processBatchNotifications({});
+			case 'digest':
+				return this.sendDigest({});
+			case 'cleanup':
+				return this.cleanupExpired({});
 			default:
-				throw new Error('invalid notif job name');
+				throw new Error('Unknown job type');
 		}
 	}
 
-	private async processCommentRepliedJobNotif(
-		jobData: COMMENT_REPLIED_JOB_DATA,
-	) {
-		console.log('[queue]: processing comment replied notification ...');
-	}
+	private async processNotification(data: any) {}
+	private async processBatchNotifications(data: any) {}
+	private async sendDigest(data: any) {}
+	private async cleanupExpired(data: any) {}
 }

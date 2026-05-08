@@ -16,6 +16,7 @@ export default registerAs('redis', (): RedisOptions => {
 		port: Number(process.env.REDIS_PORT),
 		lazyConnect: false,
 		maxRetriesPerRequest: null,
+		enableReadyCheck: false,
 	};
 
 	return validateSchemaAndReturnData(redisConfigSchema, config);
