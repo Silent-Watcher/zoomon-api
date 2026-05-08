@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Like } from './like.schema';
 import { Connection, Model } from 'mongoose';
-import { Article } from '../article/article.schema';
+import { Article, ArticleDocument } from '../article/article.schema';
 import { ArticleService } from '../article/article.service';
 import { LikeResult } from './like.interface';
 
@@ -16,17 +16,8 @@ export class LikeService {
 
 	async SubmitOrRetriveLikeForArticle(
 		userId: string,
-		articleId: string,
+		article: ArticleDocument,
 	): Promise<LikeResult> {
-		const foundedArticle = await this.articleService.findById(
-			articleId,
-			{ likesCount: 1, _id: 1 },
-			{ lean: false },
-		);
-
-		if (!foundedArticle)
-			throw new NotFoundException(`${Article.name} not found`);
-
 		const foundedLike = await this.likeModel.findOne(
 			{
 				owner: userId,
@@ -41,16 +32,13 @@ export class LikeService {
 
 		const result: LikeResult = {
 			by: userId,
-			articleId: articleId,
+			articleId: article.id,
 			liked: false,
 			likedBefore: false,
 		};
 
 		if (foundedLike) {
-			await foundedArticle.updateOne(
-				{ $inc: { likesCount: -1 } },
-				{ session },
-			);
+			await article.updateOne({ $inc: { likesCount: -1 } }, { session });
 			await foundedLike.deleteOne({ lean: true, session });
 
 			Object.assign<
@@ -59,17 +47,14 @@ export class LikeService {
 			>(result, { liked: false, likedBefore: true });
 		} else {
 			const newLike = new this.likeModel({
-				entityId: articleId,
+				entityId: article.id,
 				owner: userId,
 				entityType: Article.name,
 			});
 
 			await newLike.save({ session });
 
-			await foundedArticle.updateOne(
-				{ $inc: { likesCount: 1 } },
-				{ session },
-			);
+			await article.updateOne({ $inc: { likesCount: 1 } }, { session });
 
 			Object.assign<
 				LikeResult,
