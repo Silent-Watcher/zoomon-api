@@ -1,6 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { NOTIF_QUEUE } from '../../common/constants/queue.constant';
 import { Job } from 'bullmq';
+import { CommentLikedJobData } from './notif-queue.interface';
 @Processor(NOTIF_QUEUE, {
 	concurrency: 10,
 	limiter: {
@@ -13,10 +14,10 @@ export class NotifConsumer extends WorkerHost {
 		super();
 	}
 
-	process(job: Job, _token?: string): Promise<any> {
-		switch (job.name) {
+	process({ name, data }: Job, _token?: string): Promise<any> {
+		switch (name) {
 			case 'send':
-				return this.processNotification({});
+				return this.processNotification(data);
 			case 'batch':
 				return this.processBatchNotifications({});
 			case 'digest':
@@ -28,7 +29,7 @@ export class NotifConsumer extends WorkerHost {
 		}
 	}
 
-	private async processNotification(data: any) {}
+	private async processNotification(data: CommentLikedJobData) {}
 	private async processBatchNotifications(data: any) {}
 	private async sendDigest(data: any) {}
 	private async cleanupExpired(data: any) {}

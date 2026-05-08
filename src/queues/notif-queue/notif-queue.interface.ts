@@ -1,1 +1,5 @@
-export interface COMMENT_REPLIED_JOB_DATA {}
+export interface CommentLikedJobData {
+	commentId: string;
+	likedBy: string;
+	commentOwner: string;
+}

@@ -27,7 +27,10 @@ export class LikeController {
 		@User('id') userId: string,
 		@Param(
 			'id',
-			commentByIdPipe({ likesCount: 1, _id: 1 }, { lean: false }),
+			commentByIdPipe(
+				{ likesCount: 1, _id: 1, owner: 1 },
+				{ lean: false },
+			),
 		)
 		comment: CommentDocument,
 	) {

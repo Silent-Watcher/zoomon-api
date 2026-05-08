@@ -3,17 +3,19 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Like } from './like.schema';
 import { Connection, Model } from 'mongoose';
 import { Article, ArticleDocument } from '../article/article.schema';
-import { ArticleService } from '../article/article.service';
 import { LikeResult } from './like.interface';
 import { CommentDocument } from '../comment/comment.schema';
 import { Comment } from '../comment/comment.schema';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EVENT_NAMES } from '../event/event.constant';
+import { CommentLikedEvent } from '../common/events/comment-liked.event';
 
 @Injectable()
 export class LikeService {
 	constructor(
 		@InjectModel(Like.name) private readonly likeModel: Model<Like>,
 		@InjectConnection() private readonly connection: Connection,
-		private readonly articleService: ArticleService,
+		private eventEmitter: EventEmitter2,
 	) {}
 
 	async SubmitOrRetriveLikeForArticle(
@@ -116,6 +118,15 @@ export class LikeService {
 				LikeResult,
 				Pick<LikeResult, 'liked' | 'likedBefore'>
 			>(result, { liked: true, likedBefore: false });
+
+			this.eventEmitter.emit(
+				EVENT_NAMES.COMMENT_LIKED,
+				new CommentLikedEvent({
+					commentId: comment.id,
+					commentOwner: comment.owner.toHexString(),
+					likedBy: userId,
+				}),
+			);
 		}
 
 		await session.commitTransaction();

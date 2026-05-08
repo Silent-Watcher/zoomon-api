@@ -33,6 +33,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { EventModule } from './event/event.module';
 import { NotifQueueModule } from './queues/notif-queue/notif-queue.module';
 import { NotificationModule } from './notification/notification.module';
+import { UserPreferenceModule } from './user-preference/user-preference.module';
 
 @Module({
 	imports: [
@@ -69,6 +70,7 @@ import { NotificationModule } from './notification/notification.module';
 		ImageQueueModule,
 		NotifQueueModule,
 		NotificationModule,
+		UserPreferenceModule,
 	],
 	controllers: [AppController],
 	providers: [
