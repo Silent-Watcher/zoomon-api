@@ -28,6 +28,7 @@ import { BullModule } from '@nestjs/bullmq';
 import redisConfig from './common/configs/redis.config';
 import { ImageQueueModule } from './queues/image-queue/image-queue.module';
 import { FileModule } from './file/file.module';
+import { SseModule } from './sse/sse.module';
 
 @Module({
 	imports: [
@@ -57,6 +58,7 @@ import { FileModule } from './file/file.module';
 		ImageQueueModule,
 		UploadModule,
 		FileModule,
+		SseModule,
 	],
 	controllers: [AppController],
 	providers: [

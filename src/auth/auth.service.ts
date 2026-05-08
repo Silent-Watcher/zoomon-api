@@ -9,6 +9,7 @@ import { emailRegex, phoneRegex } from '../common/constants/regex';
 import { Otp, OtpService } from '../otp/otp.service';
 import { AppLogger } from '../logger/logger.service';
 import { comparePassword } from '../common/helpers/password.helper';
+import { SseService } from '../sse/sse.service';
 
 export enum IDENTIFIERS {
 	EMAIL = 'email',
@@ -24,6 +25,7 @@ export class AuthService {
 		private readonly userService: UserService,
 		private readonly otpService: OtpService,
 		private readonly logger: AppLogger,
+		private readonly sseService: SseService,
 	) {
 		this.logger.setContext(AuthService.name);
 	}
@@ -91,12 +93,14 @@ export class AuthService {
 				this.getIdentifierType(identifier),
 			);
 		}
+
 		return { userId: user._id, verified: true };
 	}
 
 	async verifyByPassword(identifier: string, password: string) {
 		const user = await this.userService.findOneByIdentifier(identifier, {
 			_id: 1,
+			displayName: 1,
 			password: 1,
 		});
 		if (!user) throw new BadRequestException('User not found!');

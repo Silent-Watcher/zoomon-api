@@ -3,14 +3,22 @@ import {
 	Get,
 	InternalServerErrorException,
 	Req,
+	Sse,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { AppLogger } from './logger/logger.service';
 import { Public } from './common/decorators/public.decorator';
+import { filter, interval, map, merge, Observable, of } from 'rxjs';
+import { SseService } from './sse/sse.service';
+import { SseEvent } from './sse/sse.interface';
+import { User } from './user/decorators/user.decorator';
 
 @Controller()
 export class AppController {
-	constructor(private readonly logger: AppLogger) {
+	constructor(
+		private readonly logger: AppLogger,
+		private readonly sseService: SseService,
+	) {
 		this.logger.setContext(AppController.name);
 	}
 
@@ -24,5 +32,29 @@ export class AppController {
 		}
 		const csrfToken = req.csrfToken();
 		return { csrfToken };
+	}
+
+	@Sse('sse')
+	sse(@User('_id') userId: string): Observable<SseEvent> {
+		// Immediate connection confirmation
+		const welcome$ = of({
+			event: 'connected',
+			data: { userId, message: 'Connected to SSE' },
+		});
+
+		// Heartbeat every 3 seconds
+		const heartbeat$ = interval(3000).pipe(
+			map(() => ({
+				event: 'heartbeat',
+				data: { timestamp: Date.now() },
+			})),
+		);
+
+		// User-specific events
+		const userEvents$ = this.sseService.events$.pipe(
+			filter((event) => event?.data?.userId == userId.toString()),
+		);
+
+		return merge(welcome$, heartbeat$, userEvents$);
 	}
 }

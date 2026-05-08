@@ -4,9 +4,10 @@ import { AuthService } from './auth.service';
 import { UserModule } from '../user/user.module';
 import { OtpModule } from '../otp/otp.module';
 import { LoggerModule } from '../logger/logger.module';
+import { SseModule } from '../sse/sse.module';
 
 @Module({
-	imports: [UserModule, OtpModule, LoggerModule],
+	imports: [UserModule, OtpModule, LoggerModule, SseModule],
 	controllers: [AuthController],
 	providers: [AuthService],
 })
