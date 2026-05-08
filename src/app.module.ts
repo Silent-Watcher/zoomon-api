@@ -29,6 +29,10 @@ import redisConfig from './common/configs/redis.config';
 import { ImageQueueModule } from './queues/image-queue/image-queue.module';
 import { FileModule } from './file/file.module';
 import { SseModule } from './sse/sse.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventModule } from './event/event.module';
+import { NotifQueueModule } from './queues/notif-queue/notif-queue.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
 	imports: [
@@ -45,6 +49,9 @@ import { SseModule } from './sse/sse.module';
 			},
 			inject: [redisConfig.KEY],
 		}),
+		EventEmitterModule.forRoot({
+			delimiter: ':',
+		}),
 		LoggerModule,
 		AuthModule,
 		UserModule,
@@ -55,10 +62,13 @@ import { SseModule } from './sse/sse.module';
 		CommentModule,
 		UtilModule,
 		// ClamavModule,
-		ImageQueueModule,
 		UploadModule,
 		FileModule,
 		SseModule,
+		EventModule,
+		ImageQueueModule,
+		NotifQueueModule,
+		NotificationModule,
 	],
 	controllers: [AppController],
 	providers: [

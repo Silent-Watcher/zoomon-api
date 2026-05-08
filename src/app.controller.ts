@@ -12,12 +12,15 @@ import { filter, interval, map, merge, Observable, of } from 'rxjs';
 import { SseService } from './sse/sse.service';
 import { SseEvent } from './sse/sse.interface';
 import { User } from './user/decorators/user.decorator';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { TestCreatedEvent } from './common/events/test-created.event';
 
 @Controller()
 export class AppController {
 	constructor(
 		private readonly logger: AppLogger,
 		private readonly sseService: SseService,
+		private readonly eventEmitter: EventEmitter2,
 	) {
 		this.logger.setContext(AppController.name);
 	}
@@ -56,5 +59,16 @@ export class AppController {
 		);
 
 		return merge(welcome$, heartbeat$, userEvents$);
+	}
+
+	@Public()
+	@Get('test')
+	test() {
+		const emitted = this.eventEmitter.emit(
+			'test:created',
+			new TestCreatedEvent('test1', 'test1:created,data'),
+		);
+
+		return emitted ? 'event dispatched' : 'went wrong!';
 	}
 }

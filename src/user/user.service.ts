@@ -158,8 +158,6 @@ export class UserService implements OptimisticLockableService {
 		const imageOriginalSizeInfo =
 			await this.fileService.getOriginalImageSizeInfo(file.buffer);
 
-		// TODO: complete AVATAR_IMAGE_JOB_DATA
-		// return temporarilyPath;
 		const jobId = uuidV4();
 		await this.imageQueueService.addAvatarJob<AVATAR_IMAGE_JOB_DATA>(
 			{

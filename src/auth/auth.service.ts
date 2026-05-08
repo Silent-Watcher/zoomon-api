@@ -9,7 +9,6 @@ import { emailRegex, phoneRegex } from '../common/constants/regex';
 import { Otp, OtpService } from '../otp/otp.service';
 import { AppLogger } from '../logger/logger.service';
 import { comparePassword } from '../common/helpers/password.helper';
-import { SseService } from '../sse/sse.service';
 
 export enum IDENTIFIERS {
 	EMAIL = 'email',
@@ -25,7 +24,6 @@ export class AuthService {
 		private readonly userService: UserService,
 		private readonly otpService: OtpService,
 		private readonly logger: AppLogger,
-		private readonly sseService: SseService,
 	) {
 		this.logger.setContext(AuthService.name);
 	}
