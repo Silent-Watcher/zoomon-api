@@ -3,6 +3,13 @@ import { Module } from '@nestjs/common';
 import { NOTIF_QUEUE } from '../../common/constants/queue.constant';
 import { NotifQueueService } from './notif-queue.service';
 import { NotifConsumer } from './notif.consumer';
+import { MongooseModule } from '@nestjs/mongoose';
+import {
+	UserPreference,
+	UserPreferenceSchema,
+} from '../../user-preference/user-preference.schema';
+import { NotificationModule } from '../../notification/notification.module';
+import { UserPreferenceModule } from '../../user-preference/user-preference.module';
 
 @Module({
 	imports: [
@@ -23,6 +30,8 @@ import { NotifConsumer } from './notif.consumer';
 				},
 			},
 		}),
+		UserPreferenceModule,
+		NotificationModule,
 	],
 	providers: [NotifQueueService, NotifConsumer],
 	exports: [NotifQueueService],

@@ -1,7 +1,10 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import { NOTIF_QUEUE } from '../../common/constants/queue.constant';
-import { Job } from 'bullmq';
-import { CommentLikedJobData } from './notif-queue.interface';
+import { Job, Queue } from 'bullmq';
+import { NotificationService } from '../../notification/notification.service';
+import { UserPreferenceService } from '../../user-preference/user-preference.service';
+import { v4 as uuidV4 } from 'uuid';
+import { SendNotifJobData } from './notif-queue.interface';
 @Processor(NOTIF_QUEUE, {
 	concurrency: 10,
 	limiter: {
@@ -10,7 +13,12 @@ import { CommentLikedJobData } from './notif-queue.interface';
 	},
 })
 export class NotifConsumer extends WorkerHost {
-	constructor() {
+	constructor(
+		@InjectQueue(NOTIF_QUEUE)
+		private readonly notifQueue: Queue,
+		private readonly notificationService: NotificationService,
+		private readonly userPreferenceService: UserPreferenceService,
+	) {
 		super();
 	}
 
@@ -29,7 +37,33 @@ export class NotifConsumer extends WorkerHost {
 		}
 	}
 
-	private async processNotification(data: CommentLikedJobData) {}
+	private async processNotification(data: SendNotifJobData) {
+		const { type, category, userId } = data;
+
+		const now = new Date();
+		const { result: isInQuietHours, delayUntilEnd } =
+			await this.userPreferenceService.isInQuietHours(
+				userId,
+				now,
+				category,
+			);
+
+		console.log('isInQuietHours: ', isInQuietHours);
+		if (isInQuietHours) {
+			if (delayUntilEnd) {
+				const jobId = uuidV4();
+				await this.notifQueue.add('send', data, {
+					delay: delayUntilEnd,
+					jobId,
+				});
+			}
+			return;
+		}
+
+		const handler = this.notificationService.getServiceHandler(type);
+		const notifData = data[type];
+		handler(notifData);
+	}
 	private async processBatchNotifications(data: any) {}
 	private async sendDigest(data: any) {}
 	private async cleanupExpired(data: any) {}

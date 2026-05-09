@@ -43,7 +43,7 @@ export class CommentController {
 	createReplyComment(
 		@User() user: UserDocument,
 		@Body() createReplyDto: any,
-		@Param('parentId', commentByIdPipe({}, { lean: false }))
+		@Param('parentId', commentByIdPipe({ queryOptions: { lean: false } }))
 		parentComment: CommentDocument,
 	) {
 		return this.commentService.createReplyComment(
@@ -64,7 +64,7 @@ export class CommentController {
 
 	@Delete(':id')
 	deleteOneById(
-		@Param('id', commentByIdPipe({}, { lean: false }))
+		@Param('id', commentByIdPipe({ queryOptions: { lean: false } }))
 		comment: CommentDocument,
 	): Promise<Pick<UpdateResult, 'acknowledged' | 'modifiedCount'>> {
 		// TODO: check if the current user is the comment owner or a moderator
@@ -73,7 +73,7 @@ export class CommentController {
 
 	@Patch(':id')
 	patchOneById(
-		@Param('id', commentByIdPipe({}, { lean: false }))
+		@Param('id', commentByIdPipe({ queryOptions: { lean: false } }))
 		comment: CommentDocument,
 		@Body() patchCommentDto: PatchCommentDto,
 	): Promise<Pick<UpdateResult, 'acknowledged' | 'modifiedCount'>> {

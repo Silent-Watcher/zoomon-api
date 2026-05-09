@@ -27,10 +27,19 @@ export class LikeController {
 		@User('id') userId: string,
 		@Param(
 			'id',
-			commentByIdPipe(
-				{ likesCount: 1, _id: 1, owner: 1 },
-				{ lean: false },
-			),
+			commentByIdPipe({
+				queryOptions: { lean: false },
+				projection: {
+					likesCount: 1,
+					_id: 1,
+					owner: 1,
+					content: 1,
+					entityId: 1,
+					entityType: 1,
+					id: 1,
+				},
+				populate: { path: 'entityId', select: 'content' },
+			}),
 		)
 		comment: CommentDocument,
 	) {

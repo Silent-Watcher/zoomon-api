@@ -13,6 +13,7 @@ import { Article } from '../article/article.schema';
 @Schema({
 	id: true,
 	toJSON: { virtuals: true },
+	virtuals: true,
 	timestamps: true,
 })
 export class Comment {
@@ -30,10 +31,15 @@ export class Comment {
 	})
 	declare content: string;
 
-	@Prop({ type: Types.ObjectId, required: true, index: true })
+	@Prop({
+		type: Types.ObjectId,
+		ref: Article.name,
+		required: true,
+		index: true,
+	})
 	declare entityId: Types.ObjectId;
 
-	@Prop({ enum: [Article.name, Comment.name], required: true, index: true })
+	@Prop({ enum: [Article.name], required: true, index: true })
 	declare entityType: string;
 
 	@Prop({

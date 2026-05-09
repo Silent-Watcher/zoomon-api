@@ -124,7 +124,10 @@ export class LikeService {
 				new CommentLikedEvent({
 					commentId: comment.id,
 					commentOwner: comment.owner.toHexString(),
-					likedBy: userId,
+					commentContent: comment.content,
+					entityId: comment?.entityId?._id.toHexString(),
+					entityType: comment?.entityType,
+					entityContent: comment?.entityId['content'],
 				}),
 			);
 		}

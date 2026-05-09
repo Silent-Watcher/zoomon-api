@@ -1,7 +1,10 @@
 export interface CommentLikedEventData {
 	commentId: string;
-	likedBy: string;
 	commentOwner: string;
+	commentContent: string;
+	entityId: string;
+	entityContent: string;
+	entityType: string;
 }
 
 export class CommentLikedEvent {

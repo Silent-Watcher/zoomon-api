@@ -26,6 +26,13 @@ export enum NOTIFICATION_STATUS {
 	FAILED = 'failed',
 }
 
+export enum NOTIFICATION_CATEGORY {
+	SOCIAL = 'social',
+	SYSTEM = 'system',
+	MARKETING = 'marketing',
+	NEWSLETTER = 'newsletter',
+}
+
 export const MAXIMUM_NOTIFICATION_TITLE_LENGTH = 255;
 export const MAXIMUM_NOTIFICATION_BODY_LENGTH = 2000;
 export type NotificationChannels =

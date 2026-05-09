@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { NotificationService } from './notification.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Notification, NotificationSchema } from './notification.schema';
 import { versionFieldMiddleware } from '../common/helpers/mongo.helper';
+import { CommentNotificationService } from './social/comment-notification.service';
+import { NotificationService } from './notification.service';
 
 @Module({
 	imports: [
@@ -17,6 +18,7 @@ import { versionFieldMiddleware } from '../common/helpers/mongo.helper';
 			},
 		]),
 	],
-	providers: [NotificationService],
+	providers: [CommentNotificationService, NotificationService],
+	exports: [NotificationService],
 })
 export class NotificationModule {}

@@ -1,6 +1,7 @@
-import { Prop, raw, Schema } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import { User } from '../user/decorators/user.decorator';
+import { NOTIFICATION_CATEGORY } from '../notification/notification.constant';
 
 @Schema({
 	toJSON: { virtuals: true },
@@ -53,9 +54,23 @@ export class UserPreference {
 	)
 	declare digest: Record<string, any>;
 
+	@Prop({
+		type: [String],
+		enum: {
+			values: Object.values(NOTIFICATION_CATEGORY),
+		},
+		required: false,
+		default: [],
+	})
+	mutedNotifCategories?: NOTIFICATION_CATEGORY[];
+
 	declare _id: Types.ObjectId;
 	declare id: string;
 
 	declare createdAt: Date;
 	declare updatedAt: Date;
 }
+
+export type UserPreferenceDocument = HydratedDocument<UserPreference>;
+export const UserPreferenceSchema =
+	SchemaFactory.createForClass(UserPreference);
