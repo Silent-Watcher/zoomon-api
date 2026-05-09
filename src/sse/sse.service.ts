@@ -24,7 +24,7 @@ export class SseService {
 	/** Returns an observable stream of events for a specific user */
 	userEvents$(userId: string): Observable<SseEvent> {
 		return new Observable<SseEvent>((subscriber) => {
-			this.addConnection(userId);
+			this.addConnection(userId.toString());
 
 			const subscription = this.events$
 				.pipe(filter((event) => event?.data?.userId === userId))
@@ -37,7 +37,7 @@ export class SseService {
 			// Cleanup when client disconnects
 			return () => {
 				subscription.unsubscribe();
-				this.removeConnection(userId);
+				this.removeConnection(userId.toString());
 			};
 		});
 	}

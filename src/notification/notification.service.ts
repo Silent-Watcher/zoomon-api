@@ -10,7 +10,9 @@ export class NotificationService {
 	getServiceHandler(notifType: NOTIFICATION_TYPE) {
 		switch (notifType) {
 			case NOTIFICATION_TYPE.COMMENT_LIKED:
-				return this.commentNotifService.sendCommentLikedNotification;
+				return this.commentNotifService.sendCommentLikedNotification.bind(
+					this.commentNotifService,
+				);
 			default:
 				throw new Error('Unknown Notification Type');
 		}

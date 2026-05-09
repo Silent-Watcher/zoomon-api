@@ -8,7 +8,7 @@ import {
 import type { Request } from 'express';
 import { AppLogger } from './logger/logger.service';
 import { Public } from './common/decorators/public.decorator';
-import { filter, interval, map, merge, Observable, of } from 'rxjs';
+import { interval, map, merge, Observable, of } from 'rxjs';
 import { SseService } from './sse/sse.service';
 import { SseEvent } from './sse/sse.interface';
 import { User } from './user/decorators/user.decorator';
@@ -40,13 +40,14 @@ export class AppController {
 	@Sse('sse')
 	sse(@User('_id') userId: string): Observable<SseEvent> {
 		// Immediate connection confirmation
+
 		const welcome$ = of({
 			event: 'connected',
-			data: { userId, message: 'Connected to SSE' },
+			data: { userId: userId.toString(), message: 'Connected to SSE' },
 		});
 
 		// Heartbeat every 3 seconds
-		const heartbeat$ = interval(3000).pipe(
+		const heartbeat$ = interval(100).pipe(
 			map(() => ({
 				event: 'heartbeat',
 				data: { timestamp: Date.now() },
@@ -54,7 +55,7 @@ export class AppController {
 		);
 
 		// User-specific events
-		const userEvents$ = this.sseService.userEvents$(userId);
+		const userEvents$ = this.sseService.userEvents$(userId.toString());
 
 		return merge(welcome$, heartbeat$, userEvents$);
 	}

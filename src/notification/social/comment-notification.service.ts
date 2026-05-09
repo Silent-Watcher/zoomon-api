@@ -27,6 +27,7 @@ export class CommentNotificationService {
 		data: CommentLikedNotificationData,
 	): Promise<Notification> {
 		const { commentContent, commentId, entityContent, recipientId } = data;
+
 		const template = this.getNotificationTemplate(
 			'liked',
 			commentContent,
@@ -49,8 +50,8 @@ export class CommentNotificationService {
 
 		if (isUserOnline) {
 			this.sseService.emit({
-				type: 'notification',
-				data: notification,
+				event: 'notification',
+				data: { notification, userId: recipientId },
 			});
 
 			await notification.updateOne({
@@ -63,7 +64,7 @@ export class CommentNotificationService {
 		return notification;
 	}
 
-	private getNotificationTemplate(
+	getNotificationTemplate(
 		type: 'liked' | 'replied',
 		commentContent: string,
 		entityContent: string,

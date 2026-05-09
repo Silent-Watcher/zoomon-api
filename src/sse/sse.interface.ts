@@ -1,6 +1,6 @@
 export interface SseEvent {
 	data: any;
 	id?: string;
-	type?: string;
+	event?: string;
 	retry?: number;
 }

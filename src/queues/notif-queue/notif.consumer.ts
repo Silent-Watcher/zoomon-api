@@ -48,7 +48,6 @@ export class NotifConsumer extends WorkerHost {
 				category,
 			);
 
-		console.log('isInQuietHours: ', isInQuietHours);
 		if (isInQuietHours) {
 			if (delayUntilEnd) {
 				const jobId = uuidV4();
