@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import redisConfig from '../common/configs/redis.config';
 import { OtpService } from './otp.service';
 
 @Module({
-	imports: [ConfigModule.forFeature(redisConfig)],
 	providers: [OtpService],
 	exports: [OtpService],
 })
