@@ -35,6 +35,7 @@ import { NotifQueueModule } from './queues/notif-queue/notif-queue.module';
 import { NotificationModule } from './notification/notification.module';
 import { UserPreferenceModule } from './user-preference/user-preference.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
 	imports: [
@@ -69,6 +70,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 		EventEmitterModule.forRoot({
 			delimiter: ':',
 		}),
+		ScheduleModule.forRoot(),
 		LoggerModule,
 		AuthModule,
 		UserModule,
