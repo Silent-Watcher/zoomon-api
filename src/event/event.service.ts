@@ -38,8 +38,7 @@ export class EventService {
 					commentId,
 					commentContent,
 					entityContent,
-					entityId,
-					entityType,
+					recipientId: commentOwner,
 				},
 			},
 			{

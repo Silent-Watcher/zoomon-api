@@ -1,7 +1,6 @@
 export interface CommentLikedNotificationData {
 	commentId: string;
 	commentContent: string;
-	entityId: string;
+	recipientId: string;
 	entityContent: string;
-	entityType: string;
 }

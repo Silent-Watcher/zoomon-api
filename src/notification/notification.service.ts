@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CommentNotificationService } from './social/comment-notification.service';
 import { NOTIFICATION_TYPE } from './notification.constant';
-
 @Injectable()
 export class NotificationService {
 	constructor(

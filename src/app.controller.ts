@@ -54,9 +54,7 @@ export class AppController {
 		);
 
 		// User-specific events
-		const userEvents$ = this.sseService.events$.pipe(
-			filter((event) => event?.data?.userId == userId.toString()),
-		);
+		const userEvents$ = this.sseService.userEvents$(userId);
 
 		return merge(welcome$, heartbeat$, userEvents$);
 	}

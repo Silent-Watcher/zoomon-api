@@ -1,15 +1,15 @@
-import { ConfigModule, ConfigType } from '@nestjs/config';
 import { Module } from '@nestjs/common';
-import { OtpService } from './otp.service';
-import redisConfig from '../common/configs/redis.config';
+import { ConfigModule, ConfigType } from '@nestjs/config';
 import Redis from 'ioredis';
-import { OTP_REDIS } from '../common/constants/otp.constant';
+import redisConfig from '../common/configs/redis.config';
+import { REDIS } from '../common/constants/redis.constant';
+import { OtpService } from './otp.service';
 
 @Module({
 	imports: [ConfigModule.forFeature(redisConfig)],
 	providers: [
 		{
-			provide: OTP_REDIS,
+			provide: REDIS,
 			useFactory(redisConf: ConfigType<typeof redisConfig>) {
 				return new Redis({
 					host: redisConf.host,

@@ -4,12 +4,12 @@ import {
 	Injectable,
 	InternalServerErrorException,
 } from '@nestjs/common';
-import Redis from 'ioredis';
 import type { ConfigType } from '@nestjs/config';
-import apiConfig from '../common/configs/api.config';
-import { OTP_TTL_SEC } from './otp.constant';
+import Redis from 'ioredis';
 import { v4 as uuidv4 } from 'uuid';
-import { OTP_REDIS } from '../common/constants/otp.constant';
+import apiConfig from '../common/configs/api.config';
+import { REDIS } from '../common/constants/redis.constant';
+import { OTP_TTL_SEC } from './otp.constant';
 
 export enum OTP_STATUS {
 	PENDING = 'pending',
@@ -28,7 +28,7 @@ export class OtpService {
 	private readonly ttlSec = OTP_TTL_SEC; // 2 minutes
 
 	constructor(
-		@Inject(OTP_REDIS) private readonly redis: Redis,
+		@Inject(REDIS) private readonly redis: Redis,
 		@Inject(apiConfig.KEY)
 		private readonly apiConf: ConfigType<typeof apiConfig>,
 	) {

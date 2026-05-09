@@ -3,6 +3,7 @@ import { HydratedDocument, Types } from 'mongoose';
 import {
 	MAXIMUM_NOTIFICATION_BODY_LENGTH,
 	MAXIMUM_NOTIFICATION_TITLE_LENGTH,
+	NOTIFICATION_CATEGORY,
 	NOTIFICATION_CHANNEL,
 	NOTIFICATION_STATUS,
 	NOTIFICATION_TYPE,
@@ -49,6 +50,14 @@ export class Notification {
 		index: true,
 	})
 	declare type: NOTIFICATION_TYPE;
+
+	@Prop({
+		required: true,
+		enum: Object.values(NOTIFICATION_CATEGORY),
+		default: NOTIFICATION_CATEGORY.SOCIAL,
+		index: true,
+	})
+	declare category: NOTIFICATION_CATEGORY;
 
 	@Prop({
 		required: true,

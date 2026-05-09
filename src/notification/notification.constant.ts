@@ -37,3 +37,7 @@ export const MAXIMUM_NOTIFICATION_TITLE_LENGTH = 255;
 export const MAXIMUM_NOTIFICATION_BODY_LENGTH = 2000;
 export type NotificationChannels =
 	`${(typeof NOTIFICATION_CHANNEL)[keyof typeof NOTIFICATION_CHANNEL]}`;
+
+export const USER_UNREAD_NOTIF_REDIS_KEY = (userId: string): string => {
+	return `notifications:unread:${userId}`;
+};
