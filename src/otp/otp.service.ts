@@ -8,8 +8,8 @@ import type { ConfigType } from '@nestjs/config';
 import Redis from 'ioredis';
 import { v4 as uuidv4 } from 'uuid';
 import apiConfig from '../common/configs/api.config';
-import { REDIS } from '../common/constants/redis.constant';
 import { OTP_TTL_SEC } from './otp.constant';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 
 export enum OTP_STATUS {
 	PENDING = 'pending',
@@ -28,7 +28,7 @@ export class OtpService {
 	private readonly ttlSec = OTP_TTL_SEC; // 2 minutes
 
 	constructor(
-		@Inject(REDIS) private readonly redis: Redis,
+		@InjectRedis() private readonly redis: Redis,
 		@Inject(apiConfig.KEY)
 		private readonly apiConf: ConfigType<typeof apiConfig>,
 	) {

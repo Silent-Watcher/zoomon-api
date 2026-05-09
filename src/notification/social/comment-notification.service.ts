@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Notification } from '../notification.schema';
@@ -12,7 +12,7 @@ import {
 } from '../notification.constant';
 import { SseService } from '../../sse/sse.service';
 import Redis from 'ioredis';
-import { REDIS } from '../../common/constants/redis.constant';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 
 @Injectable()
 export class CommentNotificationService {
@@ -20,7 +20,7 @@ export class CommentNotificationService {
 		@InjectModel(Notification.name)
 		private readonly notificationModel: Model<Notification>,
 		private readonly sseService: SseService,
-		@Inject(REDIS) private readonly redis: Redis,
+		@InjectRedis() private readonly redis: Redis,
 	) {}
 
 	async sendCommentLikedNotification(

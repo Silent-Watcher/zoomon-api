@@ -34,11 +34,27 @@ import { EventModule } from './event/event.module';
 import { NotifQueueModule } from './queues/notif-queue/notif-queue.module';
 import { NotificationModule } from './notification/notification.module';
 import { UserPreferenceModule } from './user-preference/user-preference.module';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
 	imports: [
 		ConfigModule.forRoot(configModuleOptiosn),
 		MongooseModule.forRootAsync(mongooseModuleAsyncOptions),
+		RedisModule.forRootAsync({
+			useFactory(redisConf: ConfigType<typeof redisConfig>) {
+				return {
+					url: `redis://${redisConf.host}:${redisConf.port}`,
+					type: 'single',
+					options: {
+						lazyConnect: redisConf.lazyConnect,
+						maxRetriesPerRequest: redisConf.maxRetriesPerRequest,
+						host: redisConf.host,
+						port: redisConf.port,
+					},
+				};
+			},
+			inject: [redisConfig.KEY],
+		}),
 		BullModule.forRootAsync({
 			useFactory(redisConf: ConfigType<typeof redisConfig>) {
 				return {
