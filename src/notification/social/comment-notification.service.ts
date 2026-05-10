@@ -15,6 +15,7 @@ import Redis from 'ioredis';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import apiConfig from '../../common/configs/api.config';
 import type { ConfigType } from '@nestjs/config';
+import { REQUEST } from '@nestjs/core';
 
 @Injectable()
 export class CommentNotificationService {

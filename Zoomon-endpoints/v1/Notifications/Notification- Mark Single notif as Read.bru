@@ -1,0 +1,19 @@
+meta {
+  name: Notification: Mark Single notif as Read
+  type: http
+  seq: 1
+}
+
+patch {
+  url: {{baseUrl}}/notifications/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 69ff6b1f4fe49347ce6524bd
+}
+
+headers {
+  x-csrf-token: 0a58e2272f799f063f279f29efdd9216682837515112913a93f61b9174c2a295.0cc1687d5a84f5810dbab040ead4716a922dd32335be7306d7c2e90063b33c38494346c25d516367284ca99938cbf50194bfa95cc9c391159a4beee6b929dd66
+}

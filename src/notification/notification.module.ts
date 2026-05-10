@@ -5,6 +5,7 @@ import { versionFieldMiddleware } from '../common/helpers/mongo.helper';
 import { CommentNotificationService } from './social/comment-notification.service';
 import { NotificationService } from './notification.service';
 import { SseModule } from '../sse/sse.module';
+import { NotificationController } from './notification.controller';
 @Module({
 	imports: [
 		MongooseModule.forFeatureAsync([
@@ -19,6 +20,7 @@ import { SseModule } from '../sse/sse.module';
 		]),
 		SseModule,
 	],
+	controllers: [NotificationController],
 	providers: [CommentNotificationService, NotificationService],
 	exports: [NotificationService],
 })

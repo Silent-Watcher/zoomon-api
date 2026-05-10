@@ -5,8 +5,8 @@ import {
 	NOTIFICATION_TYPE,
 } from './notification.constant';
 import { Cron } from '@nestjs/schedule';
-import { DeleteResult, Model } from 'mongoose';
-import { Notification } from './notification.schema';
+import { DeleteResult, Model, UpdateResult } from 'mongoose';
+import { Notification, NotificationDocument } from './notification.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import {
 	CRON_EVERY_MONDAY,
@@ -31,6 +31,15 @@ export class NotificationService {
 		}
 	}
 
+	async markNotificationAsRead(
+		notifDocument: NotificationDocument,
+	): Promise<Pick<UpdateResult, 'acknowledged' | 'modifiedCount'>> {
+		const { acknowledged, modifiedCount } = await notifDocument.updateOne({
+			$set: { status: NOTIFICATION_STATUS.READ },
+		});
+		return { acknowledged, modifiedCount };
+	}
+
 	@Cron(CRON_EVERY_MONDAY)
 	deleteReadNotifications(): Promise<DeleteResult> {
 		const oneWeekAgo = new Date();
@@ -38,7 +47,7 @@ export class NotificationService {
 
 		return this.notificationModel.deleteMany({
 			createdAt: { $lte: oneWeekAgo },
-			status: NOTIFICATION_STATUS.SENT,
+			status: NOTIFICATION_STATUS.READ,
 		});
 	}
 

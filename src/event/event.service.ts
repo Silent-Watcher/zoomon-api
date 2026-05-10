@@ -20,14 +20,8 @@ export class EventService {
 
 	@OnEvent(EVENT_NAMES.COMMENT_LIKED)
 	handleCommentLikedEvent({ commentLikedEventData }: CommentLikedEvent) {
-		const {
-			commentId,
-			commentOwner,
-			commentContent,
-			entityId,
-			entityType,
-			entityContent,
-		} = commentLikedEventData;
+		const { commentId, commentOwner, commentContent, entityContent } =
+			commentLikedEventData;
 
 		this.notifQueueService.send<SendNotifJobData>(
 			{
