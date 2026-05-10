@@ -5,7 +5,7 @@ import {
 	NOTIFICATION_TYPE,
 } from './notification.constant';
 import { Cron } from '@nestjs/schedule';
-import { DeleteResult, Model, UpdateResult } from 'mongoose';
+import { DeleteResult, Model, Types, UpdateResult } from 'mongoose';
 import { Notification, NotificationDocument } from './notification.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import {
@@ -37,6 +37,31 @@ export class NotificationService {
 		const { acknowledged, modifiedCount } = await notifDocument.updateOne({
 			$set: { status: NOTIFICATION_STATUS.READ },
 		});
+		return { acknowledged, modifiedCount };
+	}
+
+	async markAllNotificationsAsRead(
+		userId: string,
+	): Promise<Pick<UpdateResult, 'acknowledged' | 'modifiedCount'>> {
+		const { acknowledged, modifiedCount } =
+			await this.notificationModel.updateMany(
+				{
+					recipientId: userId,
+					status: {
+						$in: [
+							NOTIFICATION_STATUS.SENT,
+							NOTIFICATION_STATUS.DELIVERED,
+						],
+					},
+					$or: [
+						{ expiresAt: { $exists: false } },
+						{ expiresAt: { $gt: new Date() } },
+					],
+				},
+				{
+					$set: { status: NOTIFICATION_STATUS.READ },
+				},
+			);
 		return { acknowledged, modifiedCount };
 	}
 

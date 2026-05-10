@@ -1,22 +1,15 @@
 meta {
-  name: Auth: Verify by Password
+  name: Notification: Mark All notifs as Read
   type: http
-  seq: 4
+  seq: 2
 }
 
-post {
-  url: {{baseUrl}}/account/verify-password
-  body: json
+patch {
+  url: {{baseUrl}}/notifications/read-all
+  body: none
   auth: inherit
 }
 
 headers {
   x-csrf-token: 0a58e2272f799f063f279f29efdd9216682837515112913a93f61b9174c2a295.0cc1687d5a84f5810dbab040ead4716a922dd32335be7306d7c2e90063b33c38494346c25d516367284ca99938cbf50194bfa95cc9c391159a4beee6b929dd66
-}
-
-body:json {
-  {
-    "identifier": "ali@gmail.com",
-    "password": "@Li44272815"
-  }
 }
