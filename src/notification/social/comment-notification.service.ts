@@ -9,12 +9,17 @@ import { truncateText } from '../../common/helpers/text.helper';
 import { SseService } from '../../sse/sse.service';
 import { CommentLikedNotificationData } from '../interfaces/notification.interface';
 import {
+	EMAIL_CHANNEL,
 	NOTIFICATION_CATEGORY,
 	NOTIFICATION_STATUS,
 	NOTIFICATION_TYPE,
 	USER_UNREAD_NOTIF_REDIS_KEY,
 } from '../notification.constant';
 import { Notification } from '../notification.schema';
+import type {
+	EmailChannelServicePayload,
+	NotificationChannelService,
+} from '../interfaces/notification-channels.interface';
 
 @Injectable()
 export class CommentNotificationService {
@@ -27,6 +32,8 @@ export class CommentNotificationService {
 		@InjectRedis() private readonly redis: Redis,
 		@Inject(apiConfig.KEY)
 		private readonly apiConf: ConfigType<typeof apiConfig>,
+		@Inject(EMAIL_CHANNEL)
+		private readonly emailChannel: NotificationChannelService<EmailChannelServicePayload>,
 	) {
 		this.unreadNotifRefisKey = `${this.apiConf.appName}`;
 	}

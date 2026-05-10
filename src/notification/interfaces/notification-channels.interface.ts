@@ -1,10 +1,14 @@
-export interface NotificationChannelPayload {
-	message: string;
-}
+import { EmailTemplates } from '../notification.constant';
 
-export interface NotificationChannelService {
+export interface NotificationChannelService<P> {
 	send(
 		recipient: string,
-		payload: NotificationChannelPayload,
+		subject: string,
+		payload: P,
 	): Promise<any | void> | void;
+}
+export interface EmailChannelServicePayload {
+	template?: EmailTemplates;
+	message?: string;
+	context: Record<string, unknown>;
 }

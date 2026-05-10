@@ -1,15 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import {
-	NotificationChannelPayload,
-	NotificationChannelService,
-} from '../../interfaces/notification-channels.interface';
+import { NotificationChannelService } from '../../interfaces/notification-channels.interface';
 
 @Injectable()
-export class FakeEmailChannel implements NotificationChannelService {
-	send(
-		recipient: string,
-		payload: NotificationChannelPayload,
-	): Promise<any | void> | void {
+export class FakeEmailChannel implements NotificationChannelService<any> {
+	send(recipient: string, payload: any): Promise<any | void> | void {
 		console.log(
 			`[FAKE EMAIL] To: ${recipient} , Message: ${payload.message}`,
 		);

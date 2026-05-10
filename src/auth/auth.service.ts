@@ -1,5 +1,6 @@
 import {
 	BadRequestException,
+	Inject,
 	Injectable,
 	InternalServerErrorException,
 	NotAcceptableException,
@@ -9,6 +10,10 @@ import { emailRegex, phoneRegex } from '../common/constants/regex';
 import { Otp, OtpService } from '../otp/otp.service';
 import { AppLogger } from '../logger/logger.service';
 import { comparePassword } from '../common/helpers/password.helper';
+import { NotificationService } from '../notification/notification.service';
+import { EMAIL_TEMPLATES } from '../notification/notification.constant';
+import type { ConfigType } from '@nestjs/config';
+import apiConfig from '../common/configs/api.config';
 
 export enum IDENTIFIERS {
 	EMAIL = 'email',
@@ -24,6 +29,9 @@ export class AuthService {
 		private readonly userService: UserService,
 		private readonly otpService: OtpService,
 		private readonly logger: AppLogger,
+		private readonly notificationService: NotificationService,
+		@Inject(apiConfig.KEY)
+		private readonly apiConf: ConfigType<typeof apiConfig>,
 	) {
 		this.logger.setContext(AuthService.name);
 	}
@@ -85,11 +93,27 @@ export class AuthService {
 			_id: 1,
 		});
 
+		const identifierType = this.getIdentifierType(identifier);
 		if (!user) {
 			user = await this.userService.create(
 				identifier,
 				this.getIdentifierType(identifier),
 			);
+
+			// todo: use something like email queue!
+			if (identifierType == 'email') {
+				await this.notificationService.sendEmail(
+					identifier,
+					'welcome!',
+					{
+						template: EMAIL_TEMPLATES.WELCOME,
+						context: {
+							appName: this.apiConf.appName,
+							displayName: user?.displayName ?? user.id,
+						},
+					},
+				);
+			}
 		}
 
 		return { userId: user._id, verified: true };

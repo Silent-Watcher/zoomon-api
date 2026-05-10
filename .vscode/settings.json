@@ -6,6 +6,6 @@
 		"**/.DS_Store": true,
 		"**/Thumbs.db": true,
 		"**/CVS": true,
-		"**/node_modules": false
+		"**/node_modules": true
 	}
 }

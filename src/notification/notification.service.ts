@@ -1,23 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommentNotificationService } from './social/comment-notification.service';
 import {
+	EMAIL_CHANNEL,
 	NOTIFICATION_STATUS,
 	NOTIFICATION_TYPE,
 } from './notification.constant';
 import { Cron } from '@nestjs/schedule';
-import { DeleteResult, Model, Types, UpdateResult } from 'mongoose';
+import { DeleteResult, Model, UpdateResult } from 'mongoose';
 import { Notification, NotificationDocument } from './notification.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import {
 	CRON_EVERY_MONDAY,
 	CRON_EVERY_MONTH,
 } from '../common/constants/cron.constant';
+import type {
+	EmailChannelServicePayload,
+	NotificationChannelService,
+} from './interfaces/notification-channels.interface';
 @Injectable()
 export class NotificationService {
 	constructor(
 		private readonly commentNotifService: CommentNotificationService,
 		@InjectModel(Notification.name)
 		private readonly notificationModel: Model<Notification>,
+		@Inject(EMAIL_CHANNEL)
+		private readonly emailChannel: NotificationChannelService<EmailChannelServicePayload>,
 	) {}
 
 	getServiceHandler(notifType: NOTIFICATION_TYPE) {
@@ -29,6 +36,14 @@ export class NotificationService {
 			default:
 				throw new Error('Unknown Notification Type');
 		}
+	}
+
+	sendEmail(
+		recipient: string,
+		subject: string,
+		payload: EmailChannelServicePayload,
+	) {
+		return this.emailChannel.send(recipient, subject, payload);
 	}
 
 	async markNotificationAsRead(

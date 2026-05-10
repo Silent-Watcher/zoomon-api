@@ -14,6 +14,7 @@ export type ApiConfig = {
 	appName: string;
 	requestTimeoutMs: number;
 	cursorSecret: string;
+	supportEmail: string;
 };
 
 export default registerAs('api', (): ApiConfig => {
@@ -22,6 +23,7 @@ export default registerAs('api', (): ApiConfig => {
 		appName: 'zoomon',
 		requestTimeoutMs: process.env.REQUEST_TIMEOUT_MS,
 		cursorSecret: process.env.CURSOR_SECRET,
+		supportEmail: 'support@zoomon.com',
 	};
 	return validateSchemaAndReturnData(apiConfigSchema, config);
 });

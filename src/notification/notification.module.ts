@@ -11,6 +11,7 @@ import { EMAIL_CHANNEL, EMAIL_CHANNEL_PROVIDER } from './notification.constant';
 import notificationConfig from '../common/configs/notification.config';
 import { FakeEmailChannel } from './channels/email/fake-email.channel';
 import { SmtpEmailChannel } from './channels/email/smtp-email.channel';
+import { MailerService } from '@nestjs-modules/mailer';
 @Module({
 	imports: [
 		MongooseModule.forFeatureAsync([
@@ -33,17 +34,22 @@ import { SmtpEmailChannel } from './channels/email/smtp-email.channel';
 			provide: EMAIL_CHANNEL,
 			useFactory(
 				notificationConf: ConfigType<typeof notificationConfig>,
+				mailerService: MailerService,
 			) {
+				console.log(
+					'notificationConf.emailProvider: ',
+					notificationConf.emailProvider,
+				);
 				switch (notificationConf.emailProvider) {
 					case EMAIL_CHANNEL_PROVIDER.FAKE:
 						return new FakeEmailChannel();
 					case EMAIL_CHANNEL_PROVIDER.SMTP:
-						return new SmtpEmailChannel();
+						return new SmtpEmailChannel(mailerService);
 					default:
 						throw new Error('Unknown Email Channel provider');
 				}
 			},
-			inject: [notificationConfig.KEY],
+			inject: [notificationConfig.KEY, MailerService],
 		},
 	],
 	exports: [NotificationService],

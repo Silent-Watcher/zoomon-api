@@ -22,7 +22,6 @@ import { CategoryModule } from './category/category.module';
 import { CommentModule } from './comment/comment.module';
 import { UtilModule } from './util/util.module';
 import { MongoExceptionsFilter } from './common/filters/mongo-exception.filter';
-// import { ClamavModule } from './clamav/clamav.module';
 import { UploadModule } from './upload/upload.module';
 import { BullModule } from '@nestjs/bullmq';
 import redisConfig from './common/configs/redis.config';
@@ -36,9 +35,37 @@ import { NotificationModule } from './notification/notification.module';
 import { UserPreferenceModule } from './user-preference/user-preference.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { ScheduleModule } from '@nestjs/schedule';
+import { MailerModule } from '@nestjs-modules/mailer';
+import notificationConfig from './common/configs/notification.config';
+import apiConfig from './common/configs/api.config';
+import { EjsAdapter } from '@nestjs-modules/mailer/adapters/ejs.adapter';
 
 @Module({
 	imports: [
+		MailerModule.forRootAsync({
+			useFactory(
+				notifConfig: ConfigType<typeof notificationConfig>,
+				apiConf: ConfigType<typeof apiConfig>,
+			) {
+				return {
+					transport: {
+						host: notifConfig.smtpHost,
+						port: notifConfig.smtpPort,
+					},
+					defaults: {
+						from: `"No Reply" <noreply@${apiConf.appName}.com>`,
+					},
+					template: {
+						dir: notifConfig.emailTemplatesPath,
+						adapter: new EjsAdapter(),
+						options: {
+							strict: true,
+						},
+					},
+				};
+			},
+			inject: [notificationConfig.KEY, apiConfig.KEY],
+		}),
 		ConfigModule.forRoot(configModuleOptiosn),
 		MongooseModule.forRootAsync(mongooseModuleAsyncOptions),
 		RedisModule.forRootAsync({

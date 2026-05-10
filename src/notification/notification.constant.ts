@@ -18,11 +18,6 @@ export enum NOTIFICATION_CHANNEL {
 	SMS = 'sms',
 }
 
-export enum EMAIL_CHANNEL_PROVIDER {
-	FAKE = 'fake',
-	SMTP = 'smtp',
-}
-
 export enum NOTIFICATION_STATUS {
 	PENDING = 'pending',
 	SENT = 'sent',
@@ -48,3 +43,15 @@ export const USER_UNREAD_NOTIF_REDIS_KEY = (userId: string): string => {
 };
 
 export const EMAIL_CHANNEL = 'EMAIL_CHANNEL';
+
+export enum EMAIL_CHANNEL_PROVIDER {
+	FAKE = 'fake',
+	SMTP = 'smtp',
+}
+
+export enum EMAIL_TEMPLATES {
+	WELCOME = 'welcome',
+}
+
+export type EmailTemplates =
+	`${(typeof EMAIL_TEMPLATES)[keyof typeof EMAIL_TEMPLATES]}`;

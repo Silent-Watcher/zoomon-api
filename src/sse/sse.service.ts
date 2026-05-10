@@ -5,6 +5,7 @@ import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
 import apiConfig from '../common/configs/api.config';
 import type { ConfigType } from '@nestjs/config';
+import { AppLogger } from '../logger/logger.service';
 
 @Injectable()
 export class SseService {
@@ -12,11 +13,13 @@ export class SseService {
 	private connectionKeyPrefix: string;
 
 	constructor(
+		private readonly logger: AppLogger,
 		@InjectRedis() private readonly redis: Redis,
 		@Inject(apiConfig.KEY)
 		private readonly apiConf: ConfigType<typeof apiConfig>,
 	) {
 		this.connectionKeyPrefix = `${this.apiConf.appName}:user_online`;
+		this.logger.setContext(SseService.name);
 	}
 
 	get events$(): Observable<SseEvent> {
@@ -44,7 +47,12 @@ export class SseService {
 			// Cleanup when client disconnects
 			return () => {
 				subscription.unsubscribe();
-				this.removeConnection(userId.toString());
+				this.removeConnection(userId.toString()).catch((err) =>
+					this.logger.error(
+						`Failed to remove SSE connection for user ${userId}:`,
+						err,
+					),
+				);
 			};
 		});
 	}

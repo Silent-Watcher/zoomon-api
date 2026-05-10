@@ -1,15 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import {
-	NotificationChannelPayload,
+	EmailChannelServicePayload,
 	NotificationChannelService,
 } from '../../interfaces/notification-channels.interface';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
-export class SmtpEmailChannel implements NotificationChannelService {
+export class SmtpEmailChannel implements NotificationChannelService<EmailChannelServicePayload> {
+	constructor(private readonly mailerService: MailerService) {}
+
 	send(
 		recipient: string,
-		payload: NotificationChannelPayload,
-	): Promise<any | void> | void {
-		throw new Error('Method not implemented.');
+		subject: string,
+		payload: EmailChannelServicePayload,
+	) {
+		const { context, template } = payload;
+		return this.mailerService.sendMail({
+			to: recipient,
+			subject,
+			template,
+			context,
+		});
 	}
 }
