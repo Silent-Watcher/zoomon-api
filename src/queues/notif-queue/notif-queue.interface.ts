@@ -1,8 +1,8 @@
+import { CommentLikedNotificationData } from '../../notification/interfaces/notification.interface';
 import {
 	NOTIFICATION_CATEGORY,
 	NOTIFICATION_TYPE,
 } from '../../notification/notification.constant';
-import { CommentLikedNotificationData } from '../../notification/notification.interface';
 
 export interface SendNotifJobData {
 	userId: string;

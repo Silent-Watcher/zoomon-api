@@ -1,21 +1,20 @@
+import { InjectRedis } from '@nestjs-modules/ioredis';
 import { Inject, Injectable } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
+import Redis from 'ioredis';
 import { Model } from 'mongoose';
-import { Notification } from '../notification.schema';
-import { CommentLikedNotificationData } from '../notification.interface';
+import apiConfig from '../../common/configs/api.config';
 import { truncateText } from '../../common/helpers/text.helper';
+import { SseService } from '../../sse/sse.service';
+import { CommentLikedNotificationData } from '../interfaces/notification.interface';
 import {
 	NOTIFICATION_CATEGORY,
 	NOTIFICATION_STATUS,
 	NOTIFICATION_TYPE,
 	USER_UNREAD_NOTIF_REDIS_KEY,
 } from '../notification.constant';
-import { SseService } from '../../sse/sse.service';
-import Redis from 'ioredis';
-import { InjectRedis } from '@nestjs-modules/ioredis';
-import apiConfig from '../../common/configs/api.config';
-import type { ConfigType } from '@nestjs/config';
-import { REQUEST } from '@nestjs/core';
+import { Notification } from '../notification.schema';
 
 @Injectable()
 export class CommentNotificationService {

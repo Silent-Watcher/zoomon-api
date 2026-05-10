@@ -18,6 +18,11 @@ export enum NOTIFICATION_CHANNEL {
 	SMS = 'sms',
 }
 
+export enum EMAIL_CHANNEL_PROVIDER {
+	FAKE = 'fake',
+	SMTP = 'smtp',
+}
+
 export enum NOTIFICATION_STATUS {
 	PENDING = 'pending',
 	SENT = 'sent',
@@ -41,3 +46,5 @@ export type NotificationChannels =
 export const USER_UNREAD_NOTIF_REDIS_KEY = (userId: string): string => {
 	return `notifications:unread:${userId}`;
 };
+
+export const EMAIL_CHANNEL = 'EMAIL_CHANNEL';

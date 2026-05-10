@@ -9,6 +9,7 @@ import redisConfig from './redis.config';
 import csrfConfig from './csrf.config';
 import clamavConfig from './clamav.config';
 import storageConfig from './storage.config';
+import notificationConfig from './notification.config';
 
 export const configModuleOptiosn: ConfigModuleOptions = {
 	ignoreEnvFile: true,
@@ -26,5 +27,6 @@ export const configModuleOptiosn: ConfigModuleOptions = {
 		csrfConfig,
 		clamavConfig,
 		storageConfig,
+		notificationConfig,
 	],
 };
