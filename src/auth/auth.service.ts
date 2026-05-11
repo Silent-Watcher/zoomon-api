@@ -14,6 +14,9 @@ import { NotificationService } from '../notification/notification.service';
 import { EMAIL_TEMPLATES } from '../notification/notification.constant';
 import type { ConfigType } from '@nestjs/config';
 import apiConfig from '../common/configs/api.config';
+import { UserPreferenceService } from '../user-preference/user-preference.service';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
 
 export enum IDENTIFIERS {
 	EMAIL = 'email',
@@ -32,6 +35,8 @@ export class AuthService {
 		private readonly notificationService: NotificationService,
 		@Inject(apiConfig.KEY)
 		private readonly apiConf: ConfigType<typeof apiConfig>,
+		private readonly userPreferenceService: UserPreferenceService,
+		@InjectConnection() private readonly connection: Connection,
 	) {
 		this.logger.setContext(AuthService.name);
 	}
@@ -95,14 +100,26 @@ export class AuthService {
 
 		const identifierType = this.getIdentifierType(identifier);
 		if (!user) {
+			const session = await this.connection.startSession();
+			session.startTransaction();
+
 			user = await this.userService.create(
 				identifier,
 				this.getIdentifierType(identifier),
+				session,
 			);
+
+			await this.userPreferenceService.createPreference(
+				user.id,
+				{},
+				session,
+			);
+
+			await session.commitTransaction();
+			await session.endSession();
 
 			// todo: use something like email queue!
 			if (identifierType == 'email') {
-				console.log('inside sending email...');
 				this.notificationService
 					.sendEmail(identifier, 'welcome!', {
 						template: EMAIL_TEMPLATES.WELCOME,

@@ -1,10 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ProjectionType, QueryOptions } from 'mongoose';
-import { UserPreference } from './user-preference.schema';
+import { ClientSession, Model, ProjectionType, QueryOptions } from 'mongoose';
+import {
+	UserPreference,
+	UserPreferenceDocument,
+} from './user-preference.schema';
 import { toMinutes } from '../common/helpers/date.helper';
 import { NOTIFICATION_CATEGORY } from '../notification/notification.constant';
 import { CreateUserPreferenceDto } from './dtos/create-user-preference.dto';
+import { HHMM } from './user-preference.types';
 
 @Injectable()
 export class UserPreferenceService {
@@ -36,14 +40,18 @@ export class UserPreferenceService {
 			const [hour, minute] = [date.getHours(), date.getMinutes()];
 
 			if (
-				quietDays.includes(today) &&
-				this.isQuietHours(`${hour}:${minute}`, start, end)
+				quietDays?.includes(today) &&
+				this.isQuietHours(
+					`${hour}:${minute}`,
+					start as HHMM,
+					end as HHMM,
+				)
 			) {
 				return {
 					result: true,
 					delayUntilEnd: this.getDelayUntilQuietHoursEnd(
 						`${hour}:${minute}`,
-						end,
+						end as HHMM,
 					),
 				};
 			}
@@ -60,22 +68,33 @@ export class UserPreferenceService {
 		return this.userPreferenceModel.findById(userId, projection, options);
 	}
 
-	async createPreference(userId: string, createDto: CreateUserPreferenceDto) {
+	async createPreference(
+		userId: string,
+		createDto?: CreateUserPreferenceDto,
+		session?: ClientSession,
+	): Promise<UserPreferenceDocument> {
 		const exists = await this.userPreferenceModel
 			.findOne({ userId }, { _id: 1 })
 			.lean();
 		if (exists) throw new BadRequestException('preference already defined');
 
-		await this.userPreferenceModel.create({
+		const { channels, digest, mutedNotifCategories, quietHours } =
+			createDto ?? {};
+
+		const preference = new this.userPreferenceModel({
 			userId,
+			channels,
+			digest,
+			mutedNotifCategories,
+			quietHours,
 		});
+
+		await preference.save({ session });
+
+		return preference;
 	}
 
-	isQuietHours(
-		time: `${number}:${number}`,
-		start: `${number}:${number}`,
-		end: `${number}:${number}`,
-	): boolean {
+	isQuietHours(time: HHMM, start: HHMM, end: HHMM): boolean {
 		const t = toMinutes(time);
 		const s = toMinutes(start);
 		const e = toMinutes(end);
@@ -87,10 +106,7 @@ export class UserPreferenceService {
 		}
 	}
 
-	private getDelayUntilQuietHoursEnd(
-		time: `${number}:${number}`,
-		end: `${number}:${number}`,
-	): number {
+	private getDelayUntilQuietHoursEnd(time: HHMM, end: HHMM): number {
 		const t = toMinutes(time);
 		const e = toMinutes(end) + 1;
 

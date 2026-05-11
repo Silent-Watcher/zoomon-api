@@ -3,6 +3,9 @@ import { HydratedDocument, Types } from 'mongoose';
 import { User } from '../user/decorators/user.decorator';
 import { NOTIFICATION_CATEGORY } from '../notification/notification.constant';
 import { DigestPeriod } from './user-preference.constant';
+import { ChannelsDto } from './dtos/channels.dto';
+import { QuietHoursDto } from './dtos/quiet-hours.dto';
+import { DigestDto } from './dtos/digest.dto';
 
 @Schema({
 	toJSON: { virtuals: true },
@@ -26,7 +29,7 @@ export class UserPreference {
 			sms: { type: Boolean, default: false },
 		}),
 	)
-	declare channels: Record<string, boolean>;
+	declare channels: ChannelsDto;
 
 	@Prop(
 		raw({
@@ -37,7 +40,7 @@ export class UserPreference {
 			days: { type: [Number], default: [0, 1, 2, 3, 4, 5, 6] },
 		}),
 	)
-	declare quietHours: Record<string, any>;
+	declare quietHours: QuietHoursDto;
 
 	@Prop(
 		raw({
@@ -53,7 +56,7 @@ export class UserPreference {
 			lastSent: { type: Date, default: null },
 		}),
 	)
-	declare digest: Record<string, any>;
+	declare digest: DigestDto;
 
 	@Prop({
 		type: [String],
