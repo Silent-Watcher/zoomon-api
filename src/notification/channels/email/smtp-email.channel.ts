@@ -9,17 +9,18 @@ import { MailerService } from '@nestjs-modules/mailer';
 export class SmtpEmailChannel implements NotificationChannelService<EmailChannelServicePayload> {
 	constructor(private readonly mailerService: MailerService) {}
 
-	send(
+	async send(
 		recipient: string,
 		subject: string,
 		payload: EmailChannelServicePayload,
 	) {
 		const { context, template } = payload;
-		return this.mailerService.sendMail({
+		const info = await this.mailerService.sendMail({
 			to: recipient,
 			subject,
 			template,
 			context,
 		});
+		return info;
 	}
 }

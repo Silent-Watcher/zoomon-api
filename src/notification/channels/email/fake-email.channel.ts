@@ -3,7 +3,7 @@ import { NotificationChannelService } from '../../interfaces/notification-channe
 
 @Injectable()
 export class FakeEmailChannel implements NotificationChannelService<any> {
-	send(recipient: string, payload: any): Promise<any | void> | void {
+	async send(recipient: string, payload: any): Promise<any> {
 		console.log(
 			`[FAKE EMAIL] To: ${recipient} , Message: ${payload.message}`,
 		);

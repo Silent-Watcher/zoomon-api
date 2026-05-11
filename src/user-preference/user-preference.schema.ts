@@ -2,6 +2,7 @@ import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { User } from '../user/decorators/user.decorator';
 import { NOTIFICATION_CATEGORY } from '../notification/notification.constant';
+import { DigestPeriod } from './user-preference.constant';
 
 @Schema({
 	toJSON: { virtuals: true },
@@ -43,8 +44,8 @@ export class UserPreference {
 			enabled: { type: Boolean, default: false },
 			period: {
 				type: String,
-				enum: ['daily', 'weekly'],
-				default: 'daily',
+				enum: Object.values(DigestPeriod),
+				default: DigestPeriod.DAILY,
 			},
 			time: { type: String, default: '08:00' },
 			timezone: { type: String, default: 'Asia/Tehran' },

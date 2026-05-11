@@ -102,17 +102,18 @@ export class AuthService {
 
 			// todo: use something like email queue!
 			if (identifierType == 'email') {
-				await this.notificationService.sendEmail(
-					identifier,
-					'welcome!',
-					{
+				console.log('inside sending email...');
+				this.notificationService
+					.sendEmail(identifier, 'welcome!', {
 						template: EMAIL_TEMPLATES.WELCOME,
 						context: {
 							appName: this.apiConf.appName,
 							displayName: user?.displayName ?? user.id,
 						},
-					},
-				);
+					})
+					.then(() => {
+						console.log('[new User]: email sent...');
+					});
 			}
 		}
 

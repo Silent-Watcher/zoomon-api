@@ -12,15 +12,14 @@ import { interval, map, merge, Observable, of } from 'rxjs';
 import { SseService } from './sse/sse.service';
 import { SseEvent } from './sse/sse.interface';
 import { User } from './user/decorators/user.decorator';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { TestCreatedEvent } from './common/events/test-created.event';
+import { NotificationService } from './notification/notification.service';
 
 @Controller()
 export class AppController {
 	constructor(
 		private readonly logger: AppLogger,
 		private readonly sseService: SseService,
-		private readonly eventEmitter: EventEmitter2,
+		private readonly notificationService: NotificationService,
 	) {
 		this.logger.setContext(AppController.name);
 	}
@@ -62,12 +61,13 @@ export class AppController {
 
 	@Public()
 	@Get('test')
-	test() {
-		const emitted = this.eventEmitter.emit(
-			'test:created',
-			new TestCreatedEvent('test1', 'test1:created,data'),
-		);
-
-		return emitted ? 'event dispatched' : 'went wrong!';
+	async test() {
+		this.notificationService.sendEmail('ali@gmail.com', 'welcome', {
+			template: 'welcome',
+			context: {
+				appName: 'zoomon',
+			},
+		});
+		return 'email sent';
 	}
 }

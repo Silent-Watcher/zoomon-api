@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ProjectionType, QueryOptions } from 'mongoose';
 import { UserPreference } from './user-preference.schema';
 import { toMinutes } from '../common/helpers/date.helper';
 import { NOTIFICATION_CATEGORY } from '../notification/notification.constant';
+import { CreateUserPreferenceDto } from './dtos/create-user-preference.dto';
 
 @Injectable()
 export class UserPreferenceService {
@@ -57,6 +58,17 @@ export class UserPreferenceService {
 		options?: QueryOptions,
 	): Promise<UserPreference | null> {
 		return this.userPreferenceModel.findById(userId, projection, options);
+	}
+
+	async createPreference(userId: string, createDto: CreateUserPreferenceDto) {
+		const exists = await this.userPreferenceModel
+			.findOne({ userId }, { _id: 1 })
+			.lean();
+		if (exists) throw new BadRequestException('preference already defined');
+
+		await this.userPreferenceModel.create({
+			userId,
+		});
 	}
 
 	isQuietHours(
