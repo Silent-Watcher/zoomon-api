@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { EMAIL_QUEUE } from '../../common/constants/queue.constant';
 import { EmailQueueService } from './email-queue.service';
 import { NotificationModule } from '../../notification/notification.module';
+import { EmailConsumer } from './email.consumer';
 
 @Module({
 	imports: [
@@ -27,7 +28,7 @@ import { NotificationModule } from '../../notification/notification.module';
 			},
 		}),
 	],
-	providers: [EmailQueueService],
+	providers: [EmailQueueService, EmailConsumer],
 	exports: [EmailQueueService],
 })
 export class EmailQueueModule {}

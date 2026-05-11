@@ -39,6 +39,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import notificationConfig from './common/configs/notification.config';
 import apiConfig from './common/configs/api.config';
 import { EjsAdapter } from '@nestjs-modules/mailer/adapters/ejs.adapter';
+import { EmailQueueModule } from './queues/email-queue/email-queue.module';
 
 @Module({
 	imports: [
@@ -113,6 +114,7 @@ import { EjsAdapter } from '@nestjs-modules/mailer/adapters/ejs.adapter';
 		SseModule,
 		EventModule,
 		ImageQueueModule,
+		EmailQueueModule,
 		NotifQueueModule,
 		NotificationModule,
 		UserPreferenceModule,

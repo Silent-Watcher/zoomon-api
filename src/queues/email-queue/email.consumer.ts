@@ -22,15 +22,21 @@ export class EmailConsumer extends WorkerHost {
 	private async processWelcomeEmailJob(
 		jobData: WELCOME_EMAIL_JOB_DATA,
 	): Promise<any> {
+		console.log('inside consumer...');
+
 		const {
 			payload: { context, template },
 			recipient,
 			subject,
 		} = jobData;
 
-		this.notificationService.sendEmail(recipient, subject, {
-			context,
-			template,
-		});
+		this.notificationService
+			.sendEmail(recipient, subject, {
+				context,
+				template,
+			})
+			.then((result) => {
+				console.log(result);
+			});
 	}
 }

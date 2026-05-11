@@ -13,6 +13,10 @@ import { SseService } from './sse/sse.service';
 import { SseEvent } from './sse/sse.interface';
 import { User } from './user/decorators/user.decorator';
 import { NotificationService } from './notification/notification.service';
+import { EmailQueueService } from './queues/email-queue/email-queue.service';
+import { WELCOME_EMAIL_JOB_DATA } from './queues/email-queue/email-queue.interface';
+import { v4 as uuidV4 } from 'uuid';
+import { EMAIL_TEMPLATES } from './notification/notification.constant';
 
 @Controller()
 export class AppController {
@@ -20,6 +24,7 @@ export class AppController {
 		private readonly logger: AppLogger,
 		private readonly sseService: SseService,
 		private readonly notificationService: NotificationService,
+		private readonly emailQueueService: EmailQueueService,
 	) {
 		this.logger.setContext(AppController.name);
 	}
@@ -62,12 +67,20 @@ export class AppController {
 	@Public()
 	@Get('test')
 	async test() {
-		this.notificationService.sendEmail('ali@gmail.com', 'welcome', {
-			template: 'welcome',
-			context: {
-				appName: 'zoomon',
-			},
-		});
+		this.emailQueueService
+			.addWelcomeEmailJob<WELCOME_EMAIL_JOB_DATA>(
+				{
+					recipient: 'ali@gmail.com',
+					subject: 'welcome',
+					payload: {
+						template: EMAIL_TEMPLATES.WELCOME,
+						context: { appName: 'zoomon' },
+					},
+				},
+				{ jobId: uuidV4() },
+			)
+			.then(() => {});
+
 		return 'email sent';
 	}
 }
