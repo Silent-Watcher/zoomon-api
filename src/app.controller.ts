@@ -14,9 +14,8 @@ import { SseEvent } from './sse/sse.interface';
 import { User } from './user/decorators/user.decorator';
 import { NotificationService } from './notification/notification.service';
 import { EmailQueueService } from './queues/email-queue/email-queue.service';
-import { WELCOME_EMAIL_JOB_DATA } from './queues/email-queue/email-queue.interface';
-import { v4 as uuidV4 } from 'uuid';
-import { EMAIL_TEMPLATES } from './notification/notification.constant';
+import { Idempotent } from './common/decorators/idempotent.decorator';
+import { sleep } from './common/helpers/general.helper';
 
 @Controller()
 export class AppController {
@@ -65,22 +64,10 @@ export class AppController {
 	}
 
 	@Public()
+	@Idempotent()
 	@Get('test')
 	async test() {
-		this.emailQueueService
-			.addWelcomeEmailJob<WELCOME_EMAIL_JOB_DATA>(
-				{
-					recipient: 'ali@gmail.com',
-					subject: 'welcome',
-					payload: {
-						template: EMAIL_TEMPLATES.WELCOME,
-						context: { appName: 'zoomon' },
-					},
-				},
-				{ jobId: uuidV4() },
-			)
-			.then(() => {});
-
-		return 'email sent';
+		await sleep(60_000);
+		return 'test endpoint';
 	}
 }

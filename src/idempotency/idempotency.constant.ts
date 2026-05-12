@@ -3,3 +3,6 @@ export enum IDEMPOTENCY_KEY_STATUS {
 	COMPLETED = 'completed',
 	FAILED = 'failed',
 }
+
+export const IDEMPOTENCY_HEADER = 'idempotency-key';
+export const IDEMPOTENCY_LOCK_KEY_EXPIRES_IN_SECONDS = 30;

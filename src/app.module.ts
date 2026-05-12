@@ -41,6 +41,7 @@ import apiConfig from './common/configs/api.config';
 import { EjsAdapter } from '@nestjs-modules/mailer/adapters/ejs.adapter';
 import { EmailQueueModule } from './queues/email-queue/email-queue.module';
 import { IdempotencyModule } from './idempotency/idempotency.module';
+import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 
 @Module({
 	imports: [
@@ -150,6 +151,10 @@ import { IdempotencyModule } from './idempotency/idempotency.module';
 		{
 			provide: APP_INTERCEPTOR,
 			useClass: CacheWithEtagInterceptor,
+		},
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: IdempotencyInterceptor,
 		},
 	],
 })
