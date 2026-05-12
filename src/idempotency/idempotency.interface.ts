@@ -8,4 +8,5 @@ export interface IdempotencyFindQueryData {
 export interface IdempotencyRequestData {
 	lockToken: string;
 	key: string;
+	requestFingerPrint: string;
 }

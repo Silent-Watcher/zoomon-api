@@ -2,6 +2,7 @@ import {
 	Controller,
 	Get,
 	InternalServerErrorException,
+	Param,
 	Req,
 	Sse,
 } from '@nestjs/common';
@@ -40,7 +41,7 @@ export class AppController {
 	}
 
 	@Sse('sse')
-	sse(@User('_id') userId: string): Observable<SseEvent> {
+	sse(@User('id') userId: string): Observable<SseEvent> {
 		// Immediate connection confirmation
 
 		const welcome$ = of({
@@ -62,10 +63,18 @@ export class AppController {
 		return merge(welcome$, heartbeat$, userEvents$);
 	}
 
-	@Public()
+	// @Public()
 	@Idempotent()
-	@Get('test')
-	async test(@IdempotencyData() idempotencyData: IdempotencyRequestData) {
-		return this.appService.handleTest();
+	@Get('test/:id')
+	async test(
+		@Param('id') targetEntityId: string,
+		@User('id') userId: string,
+		@IdempotencyData() idempotencyData: IdempotencyRequestData,
+	) {
+		return this.appService.handleTest(
+			userId,
+			targetEntityId,
+			idempotencyData,
+		);
 	}
 }

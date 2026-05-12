@@ -1,14 +1,15 @@
 import { HttpStatus } from '@nestjs/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { IDEMPOTENCY_KEY_STATUS } from './idempotency.constant';
+import { IDEMPOTENCY_STATUS } from './idempotency.constant';
 import { User } from '../user/decorators/user.decorator';
+import { Next24Hours } from '../common/constants/date.constant';
 
 @Schema({
 	id: true,
 	timestamps: true,
 })
-export class IdempotencyKey {
+export class Idempotency {
 	@Prop({ required: true })
 	declare key: string;
 
@@ -18,18 +19,30 @@ export class IdempotencyKey {
 	@Prop({ required: true })
 	declare requestFingerPrint: string;
 
-	@Prop({ required: true, enum: HttpStatus, default: HttpStatus.OK })
-	declare responseCode: HttpStatus;
+	@Prop({
+		required: function (this: IdempotencyDocument) {
+			return this.status !== IDEMPOTENCY_STATUS.IN_PROGRESS;
+		},
+		enum: HttpStatus,
+		default: undefined,
+	})
+	responseCode?: HttpStatus;
 
-	@Prop({ required: true, trim: true })
-	declare responseBody: string;
+	@Prop({
+		required: function (this: IdempotencyDocument) {
+			return this.status !== IDEMPOTENCY_STATUS.IN_PROGRESS;
+		},
+		trim: true,
+		default: undefined,
+	})
+	responseBody?: string;
 
 	@Prop({
 		required: true,
-		enum: IDEMPOTENCY_KEY_STATUS,
-		default: IDEMPOTENCY_KEY_STATUS.IN_PROGRESS,
+		enum: IDEMPOTENCY_STATUS,
+		default: IDEMPOTENCY_STATUS.IN_PROGRESS,
 	})
-	declare status: IDEMPOTENCY_KEY_STATUS;
+	declare status: IDEMPOTENCY_STATUS;
 
 	@Prop({ required: true })
 	declare operationName: string;
@@ -41,8 +54,8 @@ export class IdempotencyKey {
 	declare attemptCount: number;
 
 	@Prop({
-		required: function (this: IdempotencyKeyDocument) {
-			return this.status === IDEMPOTENCY_KEY_STATUS.FAILED;
+		required: function (this: IdempotencyDocument) {
+			return this.status === IDEMPOTENCY_STATUS.FAILED;
 		},
 	})
 	errorType?: string;
@@ -50,18 +63,17 @@ export class IdempotencyKey {
 	@Prop({ type: Types.Map, of: String, required: false })
 	HeadersToReplay?: Record<string, any>;
 
-	@Prop({ required: true })
+	@Prop({ required: true, default: Next24Hours })
 	declare expiresAt: Date;
 
 	declare createdAt: Date;
 	declare updatedAt: Date;
 }
 
-export type IdempotencyKeyDocument = HydratedDocument<IdempotencyKey>;
-export const IdempotencyKeySchema =
-	SchemaFactory.createForClass(IdempotencyKey);
+export type IdempotencyDocument = HydratedDocument<Idempotency>;
+export const IdempotencySchema = SchemaFactory.createForClass(Idempotency);
 
-IdempotencyKeySchema.index(
+IdempotencySchema.index(
 	{
 		key: 1,
 		operationName: 1,

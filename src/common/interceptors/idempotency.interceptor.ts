@@ -1,3 +1,4 @@
+import { ApiUtil } from './../../util/api.util';
 import {
 	BadRequestException,
 	CallHandler,
@@ -22,6 +23,7 @@ import { v4 as uuidV4 } from 'uuid';
 import { IDEMPOTENCY_CONTEXT_KEY } from '../constants/server.constant';
 import { AppLogger } from '../../logger/logger.service';
 import { IdempotencyRequestData } from '../../idempotency/idempotency.interface';
+import { Request } from 'express';
 
 @Injectable()
 export class IdempotencyInterceptor implements NestInterceptor {
@@ -39,6 +41,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
 		@Inject(apiConfig.KEY)
 		private readonly apiConf: ConfigType<typeof apiConfig>,
 		private readonly logger: AppLogger,
+		private readonly apiUtil: ApiUtil,
 	) {
 		this.logger.setContext(IdempotencyInterceptor.name);
 	}
@@ -84,9 +87,12 @@ export class IdempotencyInterceptor implements NestInterceptor {
 			);
 		}
 
+		const requestFingerPrint = this.apiUtil.createRequestSignature(request);
+
 		request[IDEMPOTENCY_CONTEXT_KEY] = Object.freeze({
 			lockToken: idempotencyLockKey,
 			key: idempotencyKey,
+			requestFingerPrint,
 		}) satisfies IdempotencyRequestData;
 
 		const renewIntervalMs =

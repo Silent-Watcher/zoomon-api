@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { IdempotencyService } from './idempotency.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { IdempotencyKey, IdempotencyKeySchema } from './idempotency-key.schema';
+import { Idempotency, IdempotencySchema } from './idempotency.schema';
+import { IdempotencyService } from './idempotency.service';
 
 @Module({
 	imports: [
 		MongooseModule.forFeature([
-			{ name: IdempotencyKey.name, schema: IdempotencyKeySchema },
+			{ name: Idempotency.name, schema: IdempotencySchema },
 		]),
 	],
 	providers: [IdempotencyService],

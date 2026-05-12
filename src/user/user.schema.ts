@@ -1,5 +1,5 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import { getGravatarUrl } from '../common/helpers/gravatar.helper';
 
 @Schema({
@@ -8,6 +8,9 @@ import { getGravatarUrl } from '../common/helpers/gravatar.helper';
 	toJSON: { virtuals: true },
 })
 export class User {
+	declare id: string;
+	declare _id: Types.ObjectId;
+
 	@Prop({
 		required: false,
 		trim: true,
