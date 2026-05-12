@@ -40,6 +40,7 @@ import notificationConfig from './common/configs/notification.config';
 import apiConfig from './common/configs/api.config';
 import { EjsAdapter } from '@nestjs-modules/mailer/adapters/ejs.adapter';
 import { EmailQueueModule } from './queues/email-queue/email-queue.module';
+import { IdempotencyModule } from './idempotency/idempotency.module';
 
 @Module({
 	imports: [
@@ -118,6 +119,7 @@ import { EmailQueueModule } from './queues/email-queue/email-queue.module';
 		NotifQueueModule,
 		NotificationModule,
 		UserPreferenceModule,
+		IdempotencyModule,
 	],
 	controllers: [AppController],
 	providers: [
