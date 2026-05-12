@@ -42,6 +42,7 @@ import { EjsAdapter } from '@nestjs-modules/mailer/adapters/ejs.adapter';
 import { EmailQueueModule } from './queues/email-queue/email-queue.module';
 import { IdempotencyModule } from './idempotency/idempotency.module';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
+import { AppService } from './app.service';
 
 @Module({
 	imports: [
@@ -156,6 +157,7 @@ import { IdempotencyInterceptor } from './common/interceptors/idempotency.interc
 			provide: APP_INTERCEPTOR,
 			useClass: IdempotencyInterceptor,
 		},
+		AppService,
 	],
 })
 export class AppModule {}

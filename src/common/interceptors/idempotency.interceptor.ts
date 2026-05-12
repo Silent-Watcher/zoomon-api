@@ -21,6 +21,7 @@ import type { ConfigType } from '@nestjs/config';
 import { v4 as uuidV4 } from 'uuid';
 import { IDEMPOTENCY_CONTEXT_KEY } from '../constants/server.constant';
 import { AppLogger } from '../../logger/logger.service';
+import { IdempotencyRequestData } from '../../idempotency/idempotency.interface';
 
 @Injectable()
 export class IdempotencyInterceptor implements NestInterceptor {
@@ -84,9 +85,9 @@ export class IdempotencyInterceptor implements NestInterceptor {
 		}
 
 		request[IDEMPOTENCY_CONTEXT_KEY] = Object.freeze({
-			lockToken: lockTokenValue,
+			lockToken: idempotencyLockKey,
 			key: idempotencyKey,
-		});
+		}) satisfies IdempotencyRequestData;
 
 		const renewIntervalMs =
 			Math.floor(IDEMPOTENCY_LOCK_KEY_EXPIRES_IN_SECONDS / 3) * 1000;

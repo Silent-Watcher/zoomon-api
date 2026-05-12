@@ -12,18 +12,17 @@ import { interval, map, merge, Observable, of } from 'rxjs';
 import { SseService } from './sse/sse.service';
 import { SseEvent } from './sse/sse.interface';
 import { User } from './user/decorators/user.decorator';
-import { NotificationService } from './notification/notification.service';
-import { EmailQueueService } from './queues/email-queue/email-queue.service';
 import { Idempotent } from './common/decorators/idempotent.decorator';
-import { sleep } from './common/helpers/general.helper';
+import { AppService } from './app.service';
+import { IdempotencyData } from './common/decorators/idempotency-data.decorator';
+import type { IdempotencyRequestData } from './idempotency/idempotency.interface';
 
 @Controller()
 export class AppController {
 	constructor(
 		private readonly logger: AppLogger,
 		private readonly sseService: SseService,
-		private readonly notificationService: NotificationService,
-		private readonly emailQueueService: EmailQueueService,
+		private readonly appService: AppService,
 	) {
 		this.logger.setContext(AppController.name);
 	}
@@ -66,8 +65,7 @@ export class AppController {
 	@Public()
 	@Idempotent()
 	@Get('test')
-	async test() {
-		await sleep(60_000);
-		return 'test endpoint';
+	async test(@IdempotencyData() idempotencyData: IdempotencyRequestData) {
+		return this.appService.handleTest();
 	}
 }
