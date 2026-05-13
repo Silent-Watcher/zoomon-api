@@ -2,7 +2,6 @@ import {
 	Controller,
 	Get,
 	InternalServerErrorException,
-	Param,
 	Req,
 	Sse,
 } from '@nestjs/common';
@@ -13,10 +12,7 @@ import { interval, map, merge, Observable, of } from 'rxjs';
 import { SseService } from './sse/sse.service';
 import { SseEvent } from './sse/sse.interface';
 import { User } from './user/decorators/user.decorator';
-import { Idempotent } from './common/decorators/idempotent.decorator';
 import { AppService } from './app.service';
-import { IdempotencyData } from './common/decorators/idempotency-data.decorator';
-import type { IdempotencyRequestData } from './idempotency/idempotency.interface';
 
 @Controller()
 export class AppController {
@@ -61,20 +57,5 @@ export class AppController {
 		const userEvents$ = this.sseService.userEvents$(userId.toString());
 
 		return merge(welcome$, heartbeat$, userEvents$);
-	}
-
-	// @Public()
-	@Idempotent()
-	@Get('test/:id')
-	async test(
-		@Param('id') targetEntityId: string,
-		@User('id') userId: string,
-		@IdempotencyData() idempotencyData: IdempotencyRequestData,
-	) {
-		return this.appService.handleTest(
-			userId,
-			targetEntityId,
-			idempotencyData,
-		);
 	}
 }

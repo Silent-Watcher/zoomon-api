@@ -2,7 +2,6 @@ import {
 	ConflictException,
 	Injectable,
 	InternalServerErrorException,
-	NotFoundException,
 	UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -50,19 +49,20 @@ export class IdempotencyService {
 			userId,
 			...createDto,
 		});
+
 		return idempotency.save({ session });
 	}
 
-	async process(
+	async process<T>(
 		statusData: IdempotencyResolveStatusData,
 		fingerPrint: string,
-		queryOptions: {
+		queryOptions?: {
 			options?: Omit<QueryOptions, 'lean'>;
 			projection?: ProjectionType<Idempotency>;
 		},
-	): Promise<ResolveStatusResult> {
+	): Promise<ResolveStatusResult<T>> {
 		const { key, operationName, targetResourceId, userId } = statusData;
-		const { options, projection } = queryOptions;
+		const { options, projection } = queryOptions ?? {};
 
 		let idempotency = (await this.findOne(
 			{
@@ -71,13 +71,13 @@ export class IdempotencyService {
 				userId,
 				targetResourceId,
 			},
-			projection,
+			projection ?? { __v: 0 },
 			{ lean: false, ...options },
 		)) as IdempotencyDocument;
 
 		if (!idempotency) return { type: IDEMPOTENCY_RESOLUTION_TYPE.EXECUTE };
 
-		await this.validateFingerPrint(idempotency, fingerPrint);
+		this.validateFingerPrint(idempotency, fingerPrint);
 		return this.resolveStatus(idempotency, true);
 	}
 
@@ -92,10 +92,10 @@ export class IdempotencyService {
 		}
 	}
 
-	private async resolveStatus(
+	private async resolveStatus<T>(
 		idempotency: IdempotencyDocument,
 		allowRetryOnFailed: boolean,
-	): Promise<ResolveStatusResult> {
+	): Promise<ResolveStatusResult<T>> {
 		switch (idempotency.status) {
 			case IDEMPOTENCY_STATUS.COMPLETED:
 				return this.createReplayResult(idempotency);
@@ -115,20 +115,20 @@ export class IdempotencyService {
 		}
 	}
 
-	private createReplayResult(
+	private createReplayResult<T>(
 		idempotency: IdempotencyDocument,
-	): ResolveStatusResult {
+	): ResolveStatusResult<T> {
 		return {
 			type: IDEMPOTENCY_RESOLUTION_TYPE.REPLAY,
-			responseBody: idempotency.responseBody,
-			responseCode: idempotency.responseCode,
+			responseBody: JSON.parse(idempotency.responseBody!) as T,
+			responseCode: idempotency?.responseCode!,
 		};
 	}
 
-	private async handleFailedStatus(
+	private async handleFailedStatus<T>(
 		idempotency: IdempotencyDocument,
 		allowRetryOnFailed: boolean,
-	): Promise<ResolveStatusResult> {
+	): Promise<ResolveStatusResult<T>> {
 		if (allowRetryOnFailed) {
 			await idempotency.updateOne({
 				$set: { status: IDEMPOTENCY_STATUS.IN_PROGRESS },

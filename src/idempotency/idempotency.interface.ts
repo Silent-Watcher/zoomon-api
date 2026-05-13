@@ -24,11 +24,11 @@ export interface IdempotencyResolveStatusData {
 	targetResourceId: string;
 }
 
-export type ResolveStatusResult =
+export type ResolveStatusResult<T> =
 	| {
 			type: IDEMPOTENCY_RESOLUTION_TYPE.REPLAY;
-			responseBody: unknown;
-			responseCode?: number;
+			responseBody: T;
+			responseCode: number;
 	  }
 	| {
 			type: IDEMPOTENCY_RESOLUTION_TYPE.EXECUTE;
