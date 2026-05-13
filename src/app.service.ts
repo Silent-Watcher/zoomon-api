@@ -21,16 +21,16 @@ export class AppService {
 		const operationName = 'handleTest';
 		const { key, lockToken, requestFingerPrint } = idempotencyData;
 
-		let idempotency = await this.idempotencyService.findOne(
-			{
-				operationName,
-				key,
-				userId,
-				targetResourceId: entityId,
-			},
-			{},
-			{ lean: false },
-		);
+		// let idempotency = await this.idempotencyService.findOne(
+		// 	{
+		// 		operationName,
+		// 		key,
+		// 		userId,
+		// 		targetResourceId: entityId,
+		// 	},
+		// 	{},
+		// 	{ lean: false },
+		// );
 
 		if (idempotency) {
 			if (idempotency.requestFingerPrint !== requestFingerPrint) {
