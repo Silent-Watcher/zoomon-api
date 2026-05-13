@@ -22,9 +22,13 @@ import { SortArticle } from './article.interface';
 import { Article, ArticleDocument } from './article.schema';
 import { CreateArticleDto } from './dtos/create-article.dto';
 import { PatchArticleDto } from './dtos/patch-article.dto';
+import { OptimisticLockableService } from '../common/interfaces/optimistic-lockable.interface';
 
 @Injectable()
-export class ArticleService {
+export class ArticleService implements OptimisticLockableService<
+	Article,
+	ArticleDocument | Article | null
+> {
 	constructor(
 		@InjectModel(Article.name)
 		private readonly articleModel: Model<Article>,

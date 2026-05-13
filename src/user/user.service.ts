@@ -11,6 +11,7 @@ import type {
 	Model,
 	ProjectionType,
 	QueryFilter,
+	QueryOptions,
 } from 'mongoose';
 import { Identifier } from '../auth/auth.service';
 import {
@@ -25,13 +26,15 @@ import { validateInstanceWithDto } from '../common/helpers/dto.helper';
 import { validateJsonPatch } from '../common/helpers/patch.helper';
 import { v4 as uuidV4 } from 'uuid';
 import { UploadService } from '../upload/upload.service';
-import { createHash } from 'node:crypto';
 import { ImageQueueService } from '../queues/image-queue/image-queue.service';
 import { AVATAR_IMAGE_JOB_DATA } from '../queues/image-queue/image-queue.interface';
 import { FileService } from '../file/file.service';
 import { USER_AVATAR_UPLOAD_DIRECTORY } from '../file/file.constant';
 @Injectable()
-export class UserService implements OptimisticLockableService {
+export class UserService implements OptimisticLockableService<
+	User,
+	UserDocument | User | null
+> {
 	constructor(
 		@InjectModel(User.name) private readonly userModel: Model<User>,
 		private readonly uploadService: UploadService,
@@ -64,12 +67,10 @@ export class UserService implements OptimisticLockableService {
 	findById(
 		id: string,
 		projection?: ProjectionType<User>,
-		lean: boolean = true,
-		session?: ClientSession,
+		options?: QueryOptions,
 	) {
 		return this.userModel.findById(id, projection, {
-			lean,
-			session,
+			...options,
 		});
 	}
 

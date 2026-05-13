@@ -3,12 +3,11 @@ import {
 	ConflictException,
 	Injectable,
 	InternalServerErrorException,
-	NotAcceptableException,
 	NotFoundException,
 } from '@nestjs/common';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { Category } from './category.schema';
+import { Category, CategoryDocument } from './category.schema';
 import {
 	Connection,
 	DeleteResult,
@@ -20,14 +19,16 @@ import { ReplaceCategoryDto } from './dtos/update-category.dto';
 import { OptimisticLockableService } from '../common/interfaces/optimistic-lockable.interface';
 import { Article } from '../article/article.schema';
 import { SortCategory } from './category.interface';
-import { MAXIMUM_CATEGORY_PER_PAGE } from './category.constant';
 import { ListAllOptions } from '../common/interfaces/api.interface';
 import { MongoServerError } from 'mongodb';
 import { MONGODB_ERROR_CODES } from '../common/constants/mongo.constant';
 import { extractMongoDuplicateKeyValueFromError } from '../common/helpers/mongo.helper';
 
 @Injectable()
-export class CategoryService implements OptimisticLockableService {
+export class CategoryService implements OptimisticLockableService<
+	Category,
+	CategoryDocument | Category | null
+> {
 	constructor(
 		@InjectModel(Category.name)
 		private readonly categoryModel: Model<Category>,

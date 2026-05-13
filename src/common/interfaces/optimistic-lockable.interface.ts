@@ -1,4 +1,4 @@
-import { Document, Types } from 'mongoose';
+import { Document, ProjectionType, QueryOptions, Types } from 'mongoose';
 
 export interface OptimisticLockable extends Document {
 	_id: Types.ObjectId;
@@ -7,6 +7,10 @@ export interface OptimisticLockable extends Document {
 	version: number;
 }
 
-export interface OptimisticLockableService {
-	findById(id: string): Promise<any | null>;
+export interface OptimisticLockableService<P, O> {
+	findById(
+		id: string,
+		projection: ProjectionType<P>,
+		options: QueryOptions,
+	): Promise<O | null>;
 }
