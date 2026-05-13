@@ -5,6 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Category, CategorySchema } from './category.schema';
 import { versionFieldMiddleware } from '../common/helpers/mongo.helper';
 import { Article, ArticleSchema } from '../article/article.schema';
+import { IdempotencyModule } from '../idempotency/idempotency.module';
+import { LoggerModule } from '../logger/logger.module';
 
 @Module({
 	imports: [
@@ -19,6 +21,8 @@ import { Article, ArticleSchema } from '../article/article.schema';
 			},
 			{ name: Article.name, useFactory: () => ArticleSchema },
 		]),
+		LoggerModule,
+		IdempotencyModule,
 	],
 	controllers: [CategoryController],
 	providers: [CategoryService],

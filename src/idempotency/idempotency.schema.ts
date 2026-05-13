@@ -77,7 +77,6 @@ IdempotencySchema.index(
 	{
 		key: 1,
 		operationName: 1,
-		targetResourceId: 1,
 		userId: 1,
 	},
 	{ unique: true },

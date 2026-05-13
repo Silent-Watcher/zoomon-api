@@ -44,12 +44,20 @@ export class ResponseInterceptor implements NestInterceptor {
 		return next.handle().pipe(
 			timeout(this.apiConf.requestTimeoutMs),
 			map((data) => {
+				console.log('data?.responseCode: ', data?.responseCode);
+				if (data?.responseCode) {
+					response.status(data?.responseCode);
+				}
+
+				console.log('data?.responseBody: ', data?.responseBody);
+				if (data?.responseBody) data = { ...data.responseBody };
+
 				const duration = Date.now() - startTime;
 
 				if (data?.user?.password) data.user.password = undefined;
 
 				const transformedResponse: Partial<ApiResponse> = {
-					statusCode: response.statusCode,
+					statusCode: data?.responseCode ?? response.statusCode,
 					data: data?.message
 						? this.extractDataFromResponse(data)
 						: data,

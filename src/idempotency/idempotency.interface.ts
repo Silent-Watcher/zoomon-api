@@ -21,7 +21,6 @@ export interface IdempotencyResolveStatusData {
 	operationName: IDEMPOTENCY_OPERATION;
 	key: string;
 	userId: string;
-	targetResourceId: string;
 }
 
 export type ResolveStatusResult<T> =

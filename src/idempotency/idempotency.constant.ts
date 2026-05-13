@@ -6,6 +6,7 @@ export enum IDEMPOTENCY_STATUS {
 
 export enum IDEMPOTENCY_OPERATION {
 	CREATE_ARTICLE = 'article:create',
+	CREATE_CATEGORY = 'category:create',
 }
 
 export enum IDEMPOTENCY_RESOLUTION_TYPE {

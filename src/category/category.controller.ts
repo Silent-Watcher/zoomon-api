@@ -22,14 +22,28 @@ import type { SortCategory } from './category.interface';
 import { MAXIMUM_CATEGORY_PER_PAGE } from './category.constant';
 import { sortPipe } from '../common/pipes/sort.pipe';
 import { SortCategorySchema } from './validation/sort.schema';
+import { Idempotent } from '../common/decorators/idempotent.decorator';
+import { User } from '../user/decorators/user.decorator';
+import { IdempotencyData } from '../common/decorators/idempotency-data.decorator';
+import type { IdempotencyRequestData } from '../idempotency/idempotency.interface';
 @Etag('id', CategoryService)
 @Controller('categories')
 export class CategoryController {
 	constructor(private readonly categoryService: CategoryService) {}
 
+	@Idempotent()
 	@Post()
-	create(@Body() createCategoryDto: CreateCategoryDto) {
-		return this.categoryService.create(createCategoryDto);
+	create(
+		@IdempotencyData()
+		idempotencyRequestData: IdempotencyRequestData,
+		@Body() createCategoryDto: CreateCategoryDto,
+		@User('id') userId: string,
+	) {
+		return this.categoryService.create(
+			createCategoryDto,
+			userId,
+			idempotencyRequestData,
+		);
 	}
 
 	@CacheWithEtag()

@@ -25,11 +25,16 @@ export abstract class IdempotentService {
 		const { key, lockToken, requestFingerPrint } = idempotencyData;
 
 		const processResult = await this.idempotencyService.process<T>(
-			{ key, operationName, userId, targetResourceId },
+			{ key, operationName, userId },
 			requestFingerPrint,
 		);
 
 		if (processResult.type == IDEMPOTENCY_RESOLUTION_TYPE.REPLAY) {
+			const deletedCount = await this.redis.del(lockToken);
+			if (!deletedCount) {
+				this.logger.warn('failed to delete the idempotency lock token');
+			}
+
 			const { responseBody, responseCode } = processResult;
 			return { responseBody, responseCode };
 		}

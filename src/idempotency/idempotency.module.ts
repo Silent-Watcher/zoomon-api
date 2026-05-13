@@ -10,5 +10,6 @@ import { IdempotencyService } from './idempotency.service';
 		]),
 	],
 	providers: [IdempotencyService],
+	exports: [IdempotencyService],
 })
 export class IdempotencyModule {}

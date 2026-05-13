@@ -34,7 +34,12 @@ export class IdempotencyService {
 		if (targetResourceId) query.targetResourceId = targetResourceId;
 
 		return this.idempotencyKeyModel.findOne(
-			query,
+			{
+				expiresAt: {
+					$gt: new Date(),
+				},
+				...query,
+			},
 			projection ?? { __v: 0 },
 			options ?? { lean: true },
 		);
@@ -61,7 +66,7 @@ export class IdempotencyService {
 			projection?: ProjectionType<Idempotency>;
 		},
 	): Promise<ResolveStatusResult<T>> {
-		const { key, operationName, targetResourceId, userId } = statusData;
+		const { key, operationName, userId } = statusData;
 		const { options, projection } = queryOptions ?? {};
 
 		let idempotency = (await this.findOne(
@@ -69,7 +74,6 @@ export class IdempotencyService {
 				operationName,
 				key,
 				userId,
-				targetResourceId,
 			},
 			projection ?? { __v: 0 },
 			{ lean: false, ...options },

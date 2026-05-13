@@ -1,8 +1,7 @@
 import {
-	BadRequestException,
 	ConflictException,
+	HttpStatus,
 	Injectable,
-	InternalServerErrorException,
 	NotFoundException,
 } from '@nestjs/common';
 import { CreateCategoryDto } from './dtos/create-category.dto';
@@ -13,6 +12,7 @@ import {
 	DeleteResult,
 	Model,
 	QueryFilter,
+	Types,
 	UpdateResult,
 } from 'mongoose';
 import { ReplaceCategoryDto } from './dtos/update-category.dto';
@@ -20,57 +20,70 @@ import { OptimisticLockableService } from '../common/interfaces/optimistic-locka
 import { Article } from '../article/article.schema';
 import { SortCategory } from './category.interface';
 import { ListAllOptions } from '../common/interfaces/api.interface';
-import { MongoServerError } from 'mongodb';
-import { MONGODB_ERROR_CODES } from '../common/constants/mongo.constant';
-import { extractMongoDuplicateKeyValueFromError } from '../common/helpers/mongo.helper';
+import { IdempotencyService } from '../idempotency/idempotency.service';
+import { IdempotentService } from '../idempotency/idempotent-service.abstract';
+import { IDEMPOTENCY_OPERATION } from '../idempotency/idempotency.constant';
+import { IdempotencyRequestData } from '../idempotency/idempotency.interface';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import Redis from 'ioredis';
+import { AppLogger } from '../logger/logger.service';
+import { sleep } from '../common/helpers/general.helper';
 
 @Injectable()
-export class CategoryService implements OptimisticLockableService<
-	Category,
-	CategoryDocument | Category | null
-> {
+export class CategoryService
+	extends IdempotentService
+	implements
+		OptimisticLockableService<Category, CategoryDocument | Category | null>
+{
 	constructor(
 		@InjectModel(Category.name)
 		private readonly categoryModel: Model<Category>,
 		@InjectModel(Article.name)
 		private readonly articleModel: Model<Article>,
 		@InjectConnection() private readonly connection: Connection,
-	) {}
+		protected readonly idempotencyService: IdempotencyService,
+		@InjectRedis() protected readonly redis: Redis,
+		protected readonly logger: AppLogger,
+	) {
+		super(idempotencyService, redis, logger);
+	}
 
-	findById(id: string): Promise<any | null> {
+	findById(id: string) {
 		return this.categoryModel.findById(id, { __v: 0 }, { lean: true });
 	}
 
 	async create(
 		dto: CreateCategoryDto,
-	): Promise<Pick<Category, 'name' | 'id' | 'createdAt'>> {
-		try {
-			const { name: newName } = dto;
+		userId: string,
+		idempotencyData: IdempotencyRequestData,
+	) {
+		const newCategoryId = new Types.ObjectId();
+		return this.executeIdempotent(
+			IDEMPOTENCY_OPERATION.CREATE_CATEGORY,
+			idempotencyData,
+			userId,
+			newCategoryId.toHexString(),
+			async () => {
+				const { name: newName } = dto;
 
-			const exists = await this.categoryModel
-				.exists({ name: newName })
-				.lean();
-			if (exists) throw new ConflictException(`already exists`);
+				const exists = await this.categoryModel
+					.exists({ name: newName })
+					.lean();
+				if (exists) throw new ConflictException(`already exists`);
 
-			const { name, id, createdAt } = await this.categoryModel.create({
-				name: newName,
-			});
+				const { name, id, createdAt } = await this.categoryModel.create(
+					{
+						name: newName,
+						_id: newCategoryId,
+					},
+				);
 
-			return { name, id, createdAt };
-		} catch (error) {
-			//! TODO: put this inside exception filter!
-			if (error instanceof MongoServerError) {
-				if (MONGODB_ERROR_CODES.DUPLICATE_KEY === error.code) {
-					const duplicateKey = extractMongoDuplicateKeyValueFromError(
-						error.message,
-					);
-					throw new BadRequestException(
-						`Duplicate key error ${duplicateKey}`,
-					);
-				}
-			}
-			throw new InternalServerErrorException('failed to create');
-		}
+				return {
+					code: HttpStatus.CREATED,
+					body: { name, id, createdAt },
+				};
+			},
+		);
 	}
 
 	async replaceOne(
