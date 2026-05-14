@@ -36,6 +36,7 @@ export class ResponseInterceptor implements NestInterceptor {
 		const request = context.switchToHttp().getRequest<Request>();
 		const response = context.switchToHttp().getResponse<Response>();
 
+		console.log('this.apiUtil: ', this.apiUtil);
 		const reqId = uuidV4();
 		const apiVersion = this.apiUtil.getApiVersion(request);
 
@@ -44,12 +45,15 @@ export class ResponseInterceptor implements NestInterceptor {
 		return next.handle().pipe(
 			timeout(this.apiConf.requestTimeoutMs),
 			map((data) => {
-				console.log('data?.responseCode: ', data?.responseCode);
 				if (data?.responseCode) {
 					response.status(data?.responseCode);
 				}
 
-				console.log('data?.responseBody: ', data?.responseBody);
+				if (data?.__location) {
+					response.setHeader('Location', data.__location);
+					data.__location = undefined;
+				}
+
 				if (data?.responseBody) data = { ...data.responseBody };
 
 				const duration = Date.now() - startTime;

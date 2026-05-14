@@ -7,6 +7,7 @@ import { versionFieldMiddleware } from '../common/helpers/mongo.helper';
 import { Article, ArticleSchema } from '../article/article.schema';
 import { IdempotencyModule } from '../idempotency/idempotency.module';
 import { LoggerModule } from '../logger/logger.module';
+import { UtilModule } from '../util/util.module';
 
 @Module({
 	imports: [
@@ -22,6 +23,7 @@ import { LoggerModule } from '../logger/logger.module';
 			{ name: Article.name, useFactory: () => ArticleSchema },
 		]),
 		LoggerModule,
+		UtilModule,
 		IdempotencyModule,
 	],
 	controllers: [CategoryController],

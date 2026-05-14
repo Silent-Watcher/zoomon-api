@@ -36,10 +36,6 @@ import { MailerService } from '@nestjs-modules/mailer';
 				notificationConf: ConfigType<typeof notificationConfig>,
 				mailerService: MailerService,
 			) {
-				console.log(
-					'notificationConf.emailProvider: ',
-					notificationConf.emailProvider,
-				);
 				switch (notificationConf.emailProvider) {
 					case EMAIL_CHANNEL_PROVIDER.FAKE:
 						return new FakeEmailChannel();

@@ -9,6 +9,7 @@ import {
 	Post,
 	Put,
 	Query,
+	Req,
 	UsePipes,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
@@ -26,24 +27,37 @@ import { Idempotent } from '../common/decorators/idempotent.decorator';
 import { User } from '../user/decorators/user.decorator';
 import { IdempotencyData } from '../common/decorators/idempotency-data.decorator';
 import type { IdempotencyRequestData } from '../idempotency/idempotency.interface';
+import { ApiUtil } from '../util/api.util';
+import type { Request } from 'express';
 @Etag('id', CategoryService)
 @Controller('categories')
 export class CategoryController {
-	constructor(private readonly categoryService: CategoryService) {}
+	constructor(
+		private readonly categoryService: CategoryService,
+		private readonly apiUtil: ApiUtil,
+	) {}
 
 	@Idempotent()
 	@Post()
-	create(
+	async create(
 		@IdempotencyData()
 		idempotencyRequestData: IdempotencyRequestData,
 		@Body() createCategoryDto: CreateCategoryDto,
 		@User('id') userId: string,
+		@Req() req: Request,
 	) {
-		return this.categoryService.create(
+		const result = await this.categoryService.create(
 			createCategoryDto,
 			userId,
 			idempotencyRequestData,
 		);
+
+		const __location = this.apiUtil.getEntityLocationHeaderValue(
+			result.responseBody.id,
+			req,
+		);
+
+		return { __location, ...result };
 	}
 
 	@CacheWithEtag()

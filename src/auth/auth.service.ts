@@ -128,9 +128,7 @@ export class AuthService {
 							displayName: user?.displayName ?? user.id,
 						},
 					})
-					.then(() => {
-						console.log('[new User]: email sent...');
-					});
+					.then(() => {});
 			}
 		}
 

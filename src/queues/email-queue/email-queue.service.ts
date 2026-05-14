@@ -8,7 +8,6 @@ export class EmailQueueService {
 	constructor(@InjectQueue(EMAIL_QUEUE) private readonly emailQueue: Queue) {}
 
 	addWelcomeEmailJob<D>(data: D, opts?: JobsOptions) {
-		console.log('adding email job...');
 		return this.emailQueue.add(EMAIL_JOBS.WELCOME_EMAIL, data, opts);
 	}
 

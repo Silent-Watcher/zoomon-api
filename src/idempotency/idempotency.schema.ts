@@ -4,7 +4,6 @@ import { HydratedDocument, Types } from 'mongoose';
 import { IDEMPOTENCY_STATUS } from './idempotency.constant';
 import { User } from '../user/decorators/user.decorator';
 import { Next24Hours } from '../common/constants/date.constant';
-
 @Schema({
 	id: true,
 	timestamps: true,
@@ -81,3 +80,5 @@ IdempotencySchema.index(
 	},
 	{ unique: true },
 );
+
+IdempotencySchema.index({ expiresAt: 1 }, { expireAfterSeconds: 10 });
