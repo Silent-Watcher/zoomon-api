@@ -1,8 +1,9 @@
 import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import jsonpatch, { Operation } from 'fast-json-patch';
 import {
 	ClientSession,
+	Connection,
 	Model,
 	ProjectionType,
 	QueryFilter,
@@ -46,6 +47,7 @@ export class ArticleService
 		protected readonly idempotencyService: IdempotencyService,
 		@InjectRedis() protected readonly redis: Redis,
 		protected readonly logger: AppLogger,
+		@InjectConnection() private readonly connection: Connection,
 	) {
 		super(idempotencyService, redis, logger);
 		this.logger.setContext(ArticleService.name);
@@ -65,6 +67,9 @@ export class ArticleService
 		idempotencyData: IdempotencyRequestData,
 	) {
 		const newArticleId = new Types.ObjectId();
+
+		const session = await this.connection.startSession();
+		session.startTransaction();
 
 		return this.executeIdempotent(
 			IDEMPOTENCY_OPERATION.CREATE_ARTICLE,
@@ -104,17 +109,17 @@ export class ArticleService
 						categories,
 						timeToRead: Math.ceil(minutes),
 					},
-					{ __v: 0, version: 0 },
-					{ lean: true },
+					{ version: 0 },
 				);
 
-				await newArticle.save({});
+				await newArticle.save({ session });
 
 				return {
 					body: newArticle.toObject(),
 					code: HttpStatus.CREATED,
 				};
 			},
+			{ session },
 		);
 	}
 	//

@@ -27,7 +27,6 @@ import { IdempotencyRequestData } from '../idempotency/idempotency.interface';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
 import { AppLogger } from '../logger/logger.service';
-import { sleep } from '../common/helpers/general.helper';
 
 @Injectable()
 export class CategoryService
@@ -57,6 +56,9 @@ export class CategoryService
 		userId: string,
 		idempotencyData: IdempotencyRequestData,
 	) {
+		const session = await this.connection.startSession();
+		session.startTransaction();
+
 		const newCategoryId = new Types.ObjectId();
 		return this.executeIdempotent(
 			IDEMPOTENCY_OPERATION.CREATE_CATEGORY,
@@ -71,18 +73,22 @@ export class CategoryService
 					.lean();
 				if (exists) throw new ConflictException(`already exists`);
 
-				const { name, id, createdAt } = await this.categoryModel.create(
+				const newCategory = new this.categoryModel(
 					{
 						name: newName,
 						_id: newCategoryId,
 					},
+					{ name: 1, id: 1, _id: 1, createdAt: 1 },
 				);
+
+				await newCategory.save({ session });
 
 				return {
 					code: HttpStatus.CREATED,
-					body: { name, id, createdAt },
+					body: newCategory.toJSON(),
 				};
 			},
+			{ session },
 		);
 	}
 

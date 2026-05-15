@@ -8,6 +8,8 @@ import { Category } from '../category/category.schema';
 	id: true,
 	timestamps: true,
 	virtuals: true,
+	toJSON: { virtuals: true, versionKey: false },
+	toObject: { virtuals: true, versionKey: false },
 })
 export class Article {
 	declare id: string;

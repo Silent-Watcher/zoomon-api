@@ -64,6 +64,7 @@ export class IdempotencyService {
 		queryOptions?: {
 			options?: Omit<QueryOptions, 'lean'>;
 			projection?: ProjectionType<Idempotency>;
+			session?: ClientSession;
 		},
 	): Promise<ResolveStatusResult<T>> {
 		const { key, operationName, userId } = statusData;
@@ -82,7 +83,9 @@ export class IdempotencyService {
 		if (!idempotency) return { type: IDEMPOTENCY_RESOLUTION_TYPE.EXECUTE };
 
 		this.validateFingerPrint(idempotency, fingerPrint);
-		return this.resolveStatus(idempotency, true);
+		return this.resolveStatus(idempotency, true, {
+			session: queryOptions?.session,
+		});
 	}
 
 	private validateFingerPrint(
@@ -99,7 +102,10 @@ export class IdempotencyService {
 	private async resolveStatus<T>(
 		idempotency: IdempotencyDocument,
 		allowRetryOnFailed: boolean,
+		queryOptions?: { session?: ClientSession },
 	): Promise<ResolveStatusResult<T>> {
+		const { session } = queryOptions ?? {};
+
 		switch (idempotency.status) {
 			case IDEMPOTENCY_STATUS.COMPLETED:
 				return this.createReplayResult(idempotency);
@@ -110,7 +116,11 @@ export class IdempotencyService {
 				);
 
 			case IDEMPOTENCY_STATUS.FAILED:
-				return this.handleFailedStatus(idempotency, allowRetryOnFailed);
+				return this.handleFailedStatus(
+					idempotency,
+					allowRetryOnFailed,
+					{ session },
+				);
 
 			default:
 				throw new InternalServerErrorException(
@@ -132,11 +142,17 @@ export class IdempotencyService {
 	private async handleFailedStatus<T>(
 		idempotency: IdempotencyDocument,
 		allowRetryOnFailed: boolean,
+		queryOptions?: { session?: ClientSession },
 	): Promise<ResolveStatusResult<T>> {
+		const { session } = queryOptions ?? {};
+
 		if (allowRetryOnFailed) {
-			await idempotency.updateOne({
-				$set: { status: IDEMPOTENCY_STATUS.IN_PROGRESS },
-			});
+			await idempotency.updateOne(
+				{
+					$set: { status: IDEMPOTENCY_STATUS.IN_PROGRESS },
+				},
+				{ session },
+			);
 
 			return {
 				type: IDEMPOTENCY_RESOLUTION_TYPE.EXECUTE,

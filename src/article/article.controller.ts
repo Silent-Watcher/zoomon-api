@@ -54,6 +54,7 @@ export class ArticleController {
 			userId,
 			idempotencyData,
 		);
+
 		return {
 			__location: this.apiUtil.getEntityLocationHeaderValue(
 				result.responseBody.id,
