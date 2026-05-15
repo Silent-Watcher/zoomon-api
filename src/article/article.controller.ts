@@ -9,6 +9,7 @@ import {
 	Patch,
 	Post,
 	Query,
+	Req,
 	UsePipes,
 } from '@nestjs/common';
 import { ArticleService } from './article.service';
@@ -26,18 +27,40 @@ import { MAXIMUM_ARTICLE_PER_PAGE } from './article.constant';
 import type { SortArticle } from './article.interface';
 import { sortPipe } from '../common/pipes/sort.pipe';
 import { sortArticleSchema } from './validation/sort.schema';
+import { Idempotent } from '../common/decorators/idempotent.decorator';
+import { IdempotencyData } from '../common/decorators/idempotency-data.decorator';
+import type { IdempotencyRequestData } from '../idempotency/idempotency.interface';
+import type { Request } from 'express';
+import { ApiUtil } from '../util/api.util';
 
 @Etag('id', ArticleService)
 @Controller('articles')
 export class ArticleController {
-	constructor(private readonly articleService: ArticleService) {}
+	constructor(
+		private readonly articleService: ArticleService,
+		private readonly apiUtil: ApiUtil,
+	) {}
 
+	@Idempotent()
 	@Post()
-	create(
+	async create(
 		@User('id', ParseObjectIdPipe) userId: string,
 		@Body() createDto: CreateArticleDto,
+		@IdempotencyData() idempotencyData: IdempotencyRequestData,
+		@Req() request: Request,
 	) {
-		return this.articleService.create(createDto, userId);
+		const result = await this.articleService.create(
+			createDto,
+			userId,
+			idempotencyData,
+		);
+		return {
+			__location: this.apiUtil.getEntityLocationHeaderValue(
+				result.responseBody.id,
+				request,
+			),
+			...result,
+		};
 	}
 
 	@CacheWithEtag()

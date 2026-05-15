@@ -19,7 +19,7 @@ export class ApiUtil {
 	}
 
 	getEntityLocationHeaderValue(entityId: string, req: Request): string {
-		return `${req.host}/${req.url}/${entityId}`;
+		return `${req.host}${req.url}/${entityId}`;
 	}
 
 	createRequestSignature(req: Request): string {

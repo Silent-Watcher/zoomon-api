@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import jsonpatch, { Operation } from 'fast-json-patch';
 import {
@@ -23,19 +23,33 @@ import { Article, ArticleDocument } from './article.schema';
 import { CreateArticleDto } from './dtos/create-article.dto';
 import { PatchArticleDto } from './dtos/patch-article.dto';
 import { OptimisticLockableService } from '../common/interfaces/optimistic-lockable.interface';
+import { IdempotencyRequestData } from '../idempotency/idempotency.interface';
+import { IdempotencyService } from '../idempotency/idempotency.service';
+import Redis from 'ioredis';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import { AppLogger } from '../logger/logger.service';
+import { IdempotentService } from '../idempotency/idempotent-service.abstract';
+import { IDEMPOTENCY_OPERATION } from '../idempotency/idempotency.constant';
 
 @Injectable()
-export class ArticleService implements OptimisticLockableService<
-	Article,
-	ArticleDocument | Article | null
-> {
+export class ArticleService
+	extends IdempotentService
+	implements
+		OptimisticLockableService<Article, ArticleDocument | Article | null>
+{
 	constructor(
 		@InjectModel(Article.name)
 		private readonly articleModel: Model<Article>,
 		@InjectModel(Category.name)
 		private readonly categoryModel: Model<Category>,
 		private readonly cursorUtil: CursorUtil,
-	) {}
+		protected readonly idempotencyService: IdempotencyService,
+		@InjectRedis() protected readonly redis: Redis,
+		protected readonly logger: AppLogger,
+	) {
+		super(idempotencyService, redis, logger);
+		this.logger.setContext(ArticleService.name);
+	}
 
 	findById(
 		id: string,
@@ -45,34 +59,63 @@ export class ArticleService implements OptimisticLockableService<
 		return this.articleModel.findById(id, projection, options);
 	}
 	//
-	async create(dto: CreateArticleDto, authorId: string) {
-		const { title, content, slug, subTitle, categories } = dto;
+	async create(
+		dto: CreateArticleDto,
+		authorId: string,
+		idempotencyData: IdempotencyRequestData,
+	) {
+		const newArticleId = new Types.ObjectId();
 
-		if (categories) {
-			const existenceChecks = await Promise.all(
-				categories.map((id) => this.categoryModel.exists({ _id: id })),
-			);
-			const allExist = existenceChecks.every((result) => result !== null);
-
-			if (!allExist) {
-				throw new NotFoundException(
-					`One or more categories do not exist`,
-				);
-			}
-		}
-
-		// todo: check if the current user is an author! (after adding aAuthorization)
-		const { minutes } = readingTime(content);
-
-		return this.articleModel.create({
+		return this.executeIdempotent(
+			IDEMPOTENCY_OPERATION.CREATE_ARTICLE,
+			idempotencyData,
 			authorId,
-			title,
-			subTitle,
-			content,
-			slug,
-			categories,
-			timeToRead: Math.ceil(minutes),
-		});
+			newArticleId.toHexString(),
+			async () => {
+				const { title, content, slug, subTitle, categories } = dto;
+
+				if (categories) {
+					const existenceChecks = await Promise.all(
+						categories.map((id) =>
+							this.categoryModel.exists({ _id: id }),
+						),
+					);
+					const allExist = existenceChecks.every(
+						(result) => result !== null,
+					);
+
+					if (!allExist) {
+						throw new NotFoundException(
+							`One or more categories do not exist`,
+						);
+					}
+				}
+
+				// todo: check if the current user is an author! (after adding aAuthorization)
+				const { minutes } = readingTime(content);
+
+				const newArticle = new this.articleModel(
+					{
+						authorId,
+						title,
+						subTitle,
+						content,
+						slug,
+						categories,
+						timeToRead: Math.ceil(minutes),
+					},
+					{ __v: 0, version: 0 },
+					{ lean: true },
+				);
+
+				await newArticle.save({});
+
+				return {
+					body: newArticle.toObject(),
+					code: HttpStatus.CREATED,
+				};
+			},
+		);
 	}
 	//
 	async patchOne(article: Article, jsonPatch: Operation[]) {

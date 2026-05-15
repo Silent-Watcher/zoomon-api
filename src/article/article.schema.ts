@@ -7,7 +7,7 @@ import { Category } from '../category/category.schema';
 @Schema({
 	id: true,
 	timestamps: true,
-	toJSON: { virtuals: true },
+	virtuals: true,
 })
 export class Article {
 	declare id: string;

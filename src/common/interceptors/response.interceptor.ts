@@ -36,7 +36,6 @@ export class ResponseInterceptor implements NestInterceptor {
 		const request = context.switchToHttp().getRequest<Request>();
 		const response = context.switchToHttp().getResponse<Response>();
 
-		console.log('this.apiUtil: ', this.apiUtil);
 		const reqId = uuidV4();
 		const apiVersion = this.apiUtil.getApiVersion(request);
 
